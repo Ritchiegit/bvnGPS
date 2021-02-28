@@ -89,14 +89,14 @@ def get_delta_with_fisher_exact_test(gene_GSE_adjusted_concated, label):
     return delta_in_pair_pandas, pair_index_exact_expressed_list_final
 
 
-def calculate_delta_and_quantization(pair_index_exact_expressed_list_final, gene_GSE_concated):
+def calculate_delta_and_relative_expression(pair_index_exact_expressed_list_final, gene_GSE_concated):
     delta_in_pair_list = []
     for col_name_1, col_name_2 in pair_index_exact_expressed_list_final:
         col1 = gene_GSE_concated[col_name_1]
         col2 = gene_GSE_concated[col_name_2]
         delta_in_pair = col1 - col2
         delta_in_pair_list.append(delta_in_pair)
-    delta_in_pair_pandas = pd.concat(delta_in_pair_list, axis=1)
+    delta_in_pair_pandas = pd.concat(delta_in_pair_list, axis=1).values
     delta_after_quantization = (delta_in_pair_pandas <= 0) * (-1) + (delta_in_pair_pandas > 0) * (1)
 
     return delta_after_quantization

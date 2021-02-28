@@ -9,7 +9,7 @@ import os
 import sklearn
 from sklearn import linear_model
 import numpy as np
-from data_processing.iPAGE import calculate_delta_and_quantization
+from data_processing.iPAGE import calculate_delta_and_relative_expression
 
 def binary_eval(y_test, y_pred, result_save_path, model_name=None):
     AUC = metrics.roc_auc_score(y_test, y_pred)
@@ -67,7 +67,7 @@ def biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_
     else:
         data_train, pair_index_exact_expressed_list_final = get_data_with_ipage(gene_GSE_concated_train, label_train)
         pickle.dump((data_train, pair_index_exact_expressed_list_final), open(prepared_data_path, "wb"))
-    data_test = calculate_delta_and_quantization(pair_index_exact_expressed_list_final, gene_GSE_concated_test)
+    data_test = calculate_delta_and_relative_expression(pair_index_exact_expressed_list_final, gene_GSE_concated_test)
 
     # LASSO select
     _, lasso_coef_pair_index = train_eval(data_train, data_test, label_train, label_test, result_save_path=result_path+f"result_2_categories_{local_time}.csv")

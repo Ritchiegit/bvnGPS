@@ -8,10 +8,13 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from load_data.load_data_raw import load_data_raw
 from data_processing.process_data_label import get_label_multilabel
-from data_processing.iPAGE import calculate_delta_and_quantization
+from data_processing.iPAGE import calculate_delta_and_relative_expression
 
 from biomarker_select import biomarker_select
 from summary_and_train import summary_and_train
+from utils import load_list_of_tuple, save_list_of_tuple, list_with_index
+
+import itertools
 if __name__ == "__main__":
     # 1. parameters setting
     parser = argparse.ArgumentParser()
@@ -34,17 +37,19 @@ if __name__ == "__main__":
         random.seed(seed)
         torch.backends.cudnn.deterministic = True
     setup_seed(SEED)
-    folder_name = f"{relative_sig}_2level_{dataset}_seed{SEED}"
+    folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}"
     path_data_prepared = f"data_prepared/{folder_name}/"
     result_2categories_path = f"results/{folder_name}/2categories/"
     result_final_save_path = f"results/{folder_name}/concate/"
+    result_biomarker = f"results/{folder_name}/biomarker/"
     if not os.path.exists(path_data_prepared):
         os.makedirs(path_data_prepared)
     if not os.path.exists(result_2categories_path):
         os.makedirs(result_2categories_path)
     if not os.path.exists(result_final_save_path):
         os.makedirs(result_final_save_path)
-
+    if not os.path.exists(result_biomarker):
+        os.makedirs(result_biomarker)
     # 2. split the train set/ test set
     gene_GSE, label_GSE_concated = load_data_raw(dataset=dataset)
     gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
@@ -62,35 +67,31 @@ if __name__ == "__main__":
                                                                                                                         "bacteria", path_data_prepared, result_2categories_path, local_time=local_time)
     pair_index_selected_2, pair_index_exact_expressed_list_final_2 = biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test,
                                                                                                                         "virus", path_data_prepared, result_2categories_path, local_time=local_time)
-    # 存储ipage、LASSO筛选出的类别个数
-    pair_after_ipage_pd = pd.DataFrame({"control": [len(pair_index_exact_expressed_list_final_0)],
-                                        "bacteria": [len(pair_index_exact_expressed_list_final_1)],
-                                        "virus": [len(pair_index_exact_expressed_list_final_2)]})
-    pair_after_ipage_pd.to_csv(result_final_save_path + "pair_after_ipage.csv")
-    pair_after_lasso_pd = pd.DataFrame(
-        {"control": [pair_index_selected_0.shape[0]], "bacteria": [pair_index_selected_1.shape[0]],
-         "virus": [pair_index_selected_2.shape[0]]})
-    pair_after_lasso_pd.to_csv(result_final_save_path + "pair_after_lasso.csv")
 
-    def list_with_index(list_in_list, index_in_array):
-        new_list = []
-        for index_in_array_each in index_in_array:
-            new_list.append(list_in_list[index_in_array_each])
-        return new_list
-    # 4. 根据基因阈值，将绝对表达量转化为相对表达——对应做差，根据阈值划分为4个电平
+    # 4. 总结跳出的pair并存储
     pair_after_lasso_0 = list_with_index(pair_index_exact_expressed_list_final_0, pair_index_selected_0)
     pair_after_lasso_1 = list_with_index(pair_index_exact_expressed_list_final_1, pair_index_selected_1)
     pair_after_lasso_2 = list_with_index(pair_index_exact_expressed_list_final_2, pair_index_selected_2)
 
-    # 5. 拼接 训练
-    train_data_0 = calculate_delta_and_quantization(pair_after_lasso_0, gene_GSE_concated_train)
-    train_data_1 = calculate_delta_and_quantization(pair_after_lasso_1, gene_GSE_concated_train)
-    train_data_2 = calculate_delta_and_quantization(pair_after_lasso_2, gene_GSE_concated_train)
-    test_data_0 = calculate_delta_and_quantization(pair_after_lasso_0, gene_GSE_concated_test)
-    test_data_1 = calculate_delta_and_quantization(pair_after_lasso_1, gene_GSE_concated_test)
-    test_data_2 = calculate_delta_and_quantization(pair_after_lasso_2, gene_GSE_concated_test)
-    train_data_all = np.concatenate((train_data_0, train_data_1, train_data_2), axis=1)
-    test_data_all = np.concatenate((test_data_0, test_data_1, test_data_2), axis=1)
+    pair_after_lasso_123 = [pair_after_lasso_0, pair_after_lasso_1, pair_after_lasso_2]
+    pair_after_lasso = list(set(list(itertools.chain(*pair_after_lasso_123))))
+
+    # 存储ipage、LASSO筛选出的类别个数
+    save_list_of_tuple(pair_after_lasso_0, result_biomarker + "pair_after_lasso_0.csv")
+    save_list_of_tuple(pair_after_lasso_1, result_biomarker + "pair_after_lasso_1.csv")
+    save_list_of_tuple(pair_after_lasso_2, result_biomarker + "pair_after_lasso_2.csv")
+    save_list_of_tuple(pair_after_lasso, result_biomarker + "pair_after_lasso.csv")
+
+    num_pair_after_ipage_pd = pd.DataFrame({"control": [len(pair_index_exact_expressed_list_final_0)],"bacteria": [len(pair_index_exact_expressed_list_final_1)],"virus": [len(pair_index_exact_expressed_list_final_2)]})
+    num_pair_after_ipage_pd.to_csv(result_biomarker + "num_pair_after_ipage.csv")
+    num_pair_after_lasso_pd = pd.DataFrame(
+        {"control": [pair_index_selected_0.shape[0]], "bacteria": [pair_index_selected_1.shape[0]],
+         "virus": [pair_index_selected_2.shape[0]]})
+    num_pair_after_lasso_pd.to_csv(result_biomarker + "num_pair_after_lasso.csv")
+
+    # 5. 获得数据
+    train_data_all = calculate_delta_and_relative_expression(pair_after_lasso, gene_GSE_concated_train)
+    test_data_all = calculate_delta_and_relative_expression(pair_after_lasso, gene_GSE_concated_test)
 
     label_train = get_label_multilabel(label_GSE_concated=label_GSE_concated_train)
     label_test = get_label_multilabel(label_GSE_concated=label_GSE_concated_test)
