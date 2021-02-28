@@ -1,0 +1,13 @@
+learning/
+.idea/
+data/
+data_prepared/
+average_results/
+results/
+*.csv
+*.ipynb
+*.ipynb_checkpoints/
+*.pickle
+*.md
+__pycache__/
+*.pyc
