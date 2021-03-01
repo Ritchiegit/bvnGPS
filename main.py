@@ -54,7 +54,7 @@ if __name__ == "__main__":
     gene_GSE, label_GSE_concated = load_data_raw(dataset=dataset)
     gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
     gene_GSE_concated = gene_GSE_concated.T
-    gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(gene_GSE_concated, label_GSE_concated, test_size=0.3)
+    gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=SEED)
 
     # 3. 筛选出 pair_index的基因，获得划分阈值的电平
     ## iPAGE 筛选出显著的对
