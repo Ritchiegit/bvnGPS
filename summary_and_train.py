@@ -14,7 +14,8 @@ def multi_eval(y_test, y_pred, result_save_path, model_name=None):
     AUC_0 = metrics.roc_auc_score(1*(y_test == 0), 1*(y_pred_index == 0))
     AUC_1 = metrics.roc_auc_score(1*(y_test == 1), 1*(y_pred_index == 1))
     AUC_2 = metrics.roc_auc_score(1*(y_test == 2), 1*(y_pred_index == 2))
-    print(f"{model_name},Health{AUC_0},Bacteria{AUC_1},Virus{AUC_2}\n")
+    #  print(f"{model_name},Health{AUC_0},Bacteria{AUC_1},Virus{AUC_2}\n")
+    print(f"Health{AUC_0},Bacteria{AUC_1},Virus{AUC_2}\n")
     f = open(result_save_path, "a+")
     f.write(f"{model_name},{AUC_0},{AUC_1},{AUC_2}\n")
 
@@ -40,6 +41,7 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     clf = clf.fit(X_train, y_train)
     y_pred = clf.predict(X_test)
     model_name = "CART"
+    print(model_name)
     y_pred_onehot = np.eye(num_classes)[y_pred]
     multi_eval(y_test, y_pred_onehot, result_full_filepath, model_name)
 
@@ -54,17 +56,30 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     model_name = "RandomForest"
     multi_eval(y_test, y_pred_onehot, result_full_filepath, model_name)
 
+    hidden_feature_to_search = [2, 4, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 500, 750, 1000]
+    learning_rates = [0.1, 0.01, 0.001, 0.0001]
+    for hidden_feature in hidden_feature_to_search:
+        # Neural Network
+        # hidden feature batch_size learning_rate (optimizer)
+        for learning_rate in learning_rates:
+            y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 10000, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate)
+            model_name = f"NeuralNetworkMSE_h{hidden_feature}_lr{learning_rate}"
+            multi_eval(y_test, y_pred, result_full_filepath, model_name)
+
     # lgb multi-class
     gbm = lgb.LGBMRegressor(objective='multiclass', num_leaves=31, learning_rate=0.05, num_classes=num_classes)
     gbm.fit(X_train, y_train)
     y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration_)
     model_name = "lightgbm"
+    print(model_name)
     multi_eval(y_test, y_pred, result_full_filepath, model_name)
 
-    # Neural Network
-    y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 10000, sklearn_random=sklearn_random, criterion_type="MSE")
-    model_name = "Neural Network MSE"
-    multi_eval(y_test, y_pred, result_full_filepath, model_name)
+    # # Neural Network
+    # y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 10000, sklearn_random=sklearn_random, criterion_type="MSE")
+    # model_name = "Neural Network MSE"
+    # multi_eval(y_test, y_pred, result_full_filepath, model_name)
+
+
 
     f = open(result_full_filepath, "a+")
     f.write("\n")

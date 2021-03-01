@@ -11,3 +11,5 @@ results/
 *.md
 __pycache__/
 *.pyc
+weights/
+*.pth

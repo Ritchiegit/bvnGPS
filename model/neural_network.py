@@ -4,12 +4,14 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
+from tqdm import tqdm
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class FCN(nn.Module):
     def __init__(self, input_feature=22583, hidden_feature=256, output_feature=2):
         super(FCN, self).__init__()
         self.hidden_feature = hidden_feature
+        self.output_feature = output_feature
         self.linear = nn.Linear(input_feature, hidden_feature, bias=True).to(device)
         self.bn = nn.BatchNorm1d(self.hidden_feature).to(device)
         self.linear2 = nn.Linear(hidden_feature, output_feature, bias=True).to(device)
@@ -18,7 +20,7 @@ class FCN(nn.Module):
         x = F.relu(x)
         x = self.bn(x)
         x = self.linear2(x)
-        x = F.softmax(x)
+        x = F.softmax(x, dim=1)
         return x
 
 def evaluate(loader, model, criterion, num_classes=2):
@@ -54,6 +56,7 @@ def train(train_loader, model, criterion, optimizer, val_loader=None, num_classe
         loss_batch.backward()
         loss += bs * loss_batch
         optimizer.step()
+        # print(f"batch:{i_batch}, loss:{loss_batch}")
 
     train_loss = evaluate(train_loader, model, criterion, num_classes=num_classes)
     if val_loader is not None:
@@ -80,22 +83,22 @@ class earlystop():
                 if self.last_loss[i] > self.last_loss[i+1]:  # 有降低说明还没有一直升高。
                     always_go_higher = False
                     break
-            if always_go_higher == True:
-                print(self.last_loss)
+            # if always_go_higher == True:
+            # print(self.last_loss)
         return always_go_higher
 
-def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_batchs=10000, sklearn_random=109, criterion_type="MSE"):
+def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epochs=10000, sklearn_random=109, criterion_type="MSE", hidden_feature=256, batch_size=128, learning_rate=0.001):
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=sklearn_random)
     X_train_tc, X_val_tc, y_train_tc, y_val_tc = torch.from_numpy(X_train).to(device), torch.from_numpy(X_val).to(device), torch.from_numpy(y_train).to(device), torch.from_numpy(y_val).to(device)
     data_train_tc_tensorDataset = TensorDataset(X_train_tc, y_train_tc)
     data_val_tc_tensorDataset = TensorDataset(X_val_tc, y_val_tc)
-    train_loader = DataLoader(data_train_tc_tensorDataset, batch_size=128)
-    val_loader = DataLoader(data_val_tc_tensorDataset, batch_size=128)
-    print("NN input feature number", X_train.shape[1])
-    print("NN output feature", num_classes)
-    model = FCN(input_feature=X_train.shape[1], output_feature=num_classes)
+    train_loader = DataLoader(data_train_tc_tensorDataset, batch_size=batch_size)
+    val_loader = DataLoader(data_val_tc_tensorDataset, batch_size=batch_size)
+    # print("NN input feature number", X_train.shape[1])
+    # print("NN output feature", num_classes)
+    model = FCN(input_feature=X_train.shape[1], hidden_feature=hidden_feature, output_feature=num_classes)
     model = model.to(device)
-    optimizer = optim.Adagrad(model.parameters(), lr=0.0001)
+    optimizer = optim.Adagrad(model.parameters(), lr=learning_rate)  # 之前都是0.0001
     if criterion_type == "CE":
         criterion = nn.CrossEntropyLoss()
     elif criterion_type == "MSE":
@@ -105,16 +108,28 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_batc
         input()
         return
     es = earlystop()
-    for batch in range(max_batchs):
-        train_loss, val_loss = train(train_loader, model, criterion, optimizer=optimizer, val_loader=val_loader, num_classes=num_classes)
-        print(f"Batch:{batch}, train loss: {train_loss}, val loss: {val_loss}")
+    min_val_loss = 1e10
+    with tqdm(range(max_epochs)) as t:
+        for i_epoch in t:  # tqdm(range(max_epochs)):
+            train_loss, val_loss = train(train_loader, model, criterion, optimizer=optimizer, val_loader=val_loader, num_classes=num_classes)
+            t.set_description(f"Epoch:{i_epoch}, train loss: {train_loss:.10f}, val loss: {val_loss:.10f}")
+            if val_loss < min_val_loss:
+                # torch.save(model.state_dict(), f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}")
+                min_val_loss = val_loss
+            always_go_higher = es.save_loss_and_check_it_is_always_go_higher(val_loss)
+            if always_go_higher == True:
+                torch.save(model.state_dict(),
+                           f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}.pth")
+                break
 
-        always_go_higher = es.save_loss_and_check_it_is_always_go_higher(val_loss)
-        if always_go_higher == True:
-            break
     y_pred = pred(model=model, X_test=X_test)
     return y_pred
 
+
+# torch.save(model.state_dict(), PATH)
+# model = TheModelClass(*args, **kwargs)
+# model.load_state_dict(torch.load(PATH))
+# model.eval()
 # if __name__ == "__main__":
 #     sklearn_random = 109
 #     gene_GSE, label_GSE_concated = load_data_raw()
