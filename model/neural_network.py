@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
+import numpy as np
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class FCN(nn.Module):
@@ -87,8 +88,12 @@ class earlystop():
             # print(self.last_loss)
         return always_go_higher
 
-def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epochs=10000, sklearn_random=109, criterion_type="MSE", hidden_feature=256, batch_size=128, learning_rate=0.001):
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=sklearn_random)
+def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epochs=10000, sklearn_random=109, criterion_type="MSE", hidden_feature=256, batch_size=128, learning_rate=0.001, earlystop_turn_on=True, val_ratio=0.2):
+    if val_ratio != 0:
+        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_ratio, random_state=sklearn_random)
+    else:
+        X_val = np.array([0])
+        y_val = np.array([0])
     X_train_tc, X_val_tc, y_train_tc, y_val_tc = torch.from_numpy(X_train).to(device), torch.from_numpy(X_val).to(device), torch.from_numpy(y_train).to(device), torch.from_numpy(y_val).to(device)
     data_train_tc_tensorDataset = TensorDataset(X_train_tc, y_train_tc)
     data_val_tc_tensorDataset = TensorDataset(X_val_tc, y_val_tc)
@@ -98,6 +103,7 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
     # print("NN output feature", num_classes)
     model = FCN(input_feature=X_train.shape[1], hidden_feature=hidden_feature, output_feature=num_classes)
     model = model.to(device)
+    # optimizer = optim.Adam(model.parameters(), lr=learning_rate)  # 之前都是0.0001
     optimizer = optim.Adagrad(model.parameters(), lr=learning_rate)  # 之前都是0.0001
     if criterion_type == "CE":
         criterion = nn.CrossEntropyLoss()
@@ -110,18 +116,25 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
     es = earlystop()
     min_val_loss = 1e10
     with tqdm(range(max_epochs)) as t:
-        for i_epoch in t:  # tqdm(range(max_epochs)):
-            train_loss, val_loss = train(train_loader, model, criterion, optimizer=optimizer, val_loader=val_loader, num_classes=num_classes)
-            t.set_description(f"Epoch:{i_epoch}, train loss: {train_loss:.10f}, val loss: {val_loss:.10f}")
-            if val_loss < min_val_loss:
-                # torch.save(model.state_dict(), f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}")
-                min_val_loss = val_loss
-            always_go_higher = es.save_loss_and_check_it_is_always_go_higher(val_loss)
-            if always_go_higher == True:
-                torch.save(model.state_dict(),
-                           f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}.pth")
-                break
 
+        for i_epoch in t:  # tqdm(range(max_epochs)):
+            if val_ratio == 0:
+                train_loss, val_loss = train(train_loader, model, criterion, optimizer=optimizer, val_loader=None,
+                                             num_classes=num_classes)
+                t.set_description(f"Epoch:{i_epoch}, train loss: {train_loss:.10f}")
+            else:
+                train_loss, val_loss = train(train_loader, model, criterion, optimizer=optimizer, val_loader=val_loader, num_classes=num_classes)
+                t.set_description(f"Epoch:{i_epoch}, train loss: {train_loss:.10f}, val loss: {val_loss:.10f}")
+                if val_loss < min_val_loss:
+                    # torch.save(model.state_dict(), f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}")
+                    min_val_loss = val_loss
+                if earlystop_turn_on == False:
+                    continue
+                always_go_higher = es.save_loss_and_check_it_is_always_go_higher(val_loss)
+                if always_go_higher == True:
+                    break
+        torch.save(model.state_dict(),
+                       f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}.pth")
     y_pred = pred(model=model, X_test=X_test)
     return y_pred
 

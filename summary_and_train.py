@@ -54,17 +54,28 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     y_pred = classifier.predict(X_test_after_LDA)
     y_pred_onehot = np.eye(num_classes)[y_pred]
     model_name = "RandomForest"
+    print(model_name)
     multi_eval(y_test, y_pred_onehot, result_full_filepath, model_name)
 
-    hidden_feature_to_search = [2, 4, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 500, 750, 1000]
-    learning_rates = [0.1, 0.01, 0.001, 0.0001]
-    for hidden_feature in hidden_feature_to_search:
+    # hidden_feature_to_search = [2, 4, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 500, 750, 1000]
+    # learning_rates = [0.1, 0.01, 0.001, 0.0001]
+    # for hidden_feature in hidden_feature_to_search:
+    #     # Neural Network
+    #     # hidden feature batch_size learning_rate (optimizer)
+    #     for learning_rate in learning_rates:
+    #         y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 10000, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate)
+    #         model_name = f"NeuralNetworkMSE_h{hidden_feature}_lr{learning_rate}"
+    #         print(model_name)
+    #         multi_eval(y_test, y_pred, result_full_filepath, model_name)
+
+    for max_epoch in [1, 2, 3, 4, 5, 6, 7, 10, 15, 20, 25, 35, 40, 50, 75, 100, 125, 150, 175, 200, 225, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000, 3000]:
         # Neural Network
-        # hidden feature batch_size learning_rate (optimizer)
-        for learning_rate in learning_rates:
-            y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 10000, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate)
-            model_name = f"NeuralNetworkMSE_h{hidden_feature}_lr{learning_rate}"
-            multi_eval(y_test, y_pred, result_full_filepath, model_name)
+        hidden_feature = 96
+        learning_rate = 0.001
+        y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoch, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate, earlystop_turn_on=False, val_ratio=0)
+        model_name = f"Neural Network MSE epoch{max_epoch}"
+        print(model_name)
+        multi_eval(y_test, y_pred, result_full_filepath, model_name)
 
     # lgb multi-class
     gbm = lgb.LGBMRegressor(objective='multiclass', num_leaves=31, learning_rate=0.05, num_classes=num_classes)
@@ -73,13 +84,6 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     model_name = "lightgbm"
     print(model_name)
     multi_eval(y_test, y_pred, result_full_filepath, model_name)
-
-    # # Neural Network
-    # y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 10000, sklearn_random=sklearn_random, criterion_type="MSE")
-    # model_name = "Neural Network MSE"
-    # multi_eval(y_test, y_pred, result_full_filepath, model_name)
-
-
 
     f = open(result_full_filepath, "a+")
     f.write("\n")
