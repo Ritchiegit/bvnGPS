@@ -59,10 +59,11 @@ def get_delta_with_fisher_exact_test(gene_GSE_adjusted_concated, label):
     for gene_in_pathway in gene_in_pathways:
 
         gene_in_pathway_set = set(gene_in_pathway)
-        common_RNA = gene_in_pathway_set & RNA_in_dataset_set  # 每一个pathway 都找一遍
+        common_RNA = list(gene_in_pathway_set & RNA_in_dataset_set)
+        common_RNA = sorted(common_RNA)  # 保证 同一随机数结果相同
         if len(common_RNA) == 0:
             continue
-        common_RNA_list.append(list(common_RNA))
+        common_RNA_list.append(common_RNA)
     gene_GSE_in_pathways = []
     for common_RNA in common_RNA_list:  # 每个是一个pathway
         mRNA_aux = ["mRNA" for _ in range(len(common_RNA))]
@@ -79,6 +80,7 @@ def get_delta_with_fisher_exact_test(gene_GSE_adjusted_concated, label):
         pair_index_exact_expressed_list.append(pair_index_exact_expressed)  # pair name
     print("after fisher exact test of all pathway")
     pair_index_exact_expressed_list_final = list(set(list(itertools.chain(*pair_index_exact_expressed_list))))
+    # pair_index_exact_expressed_list_final = sorted(pair_index_exact_expressed_list_final)  # 可用于保证输出的pair次序相同，但本行代码不对最终结果产生影响。
     delta_in_pair_list = []
     for col_name_1, col_name_2 in pair_index_exact_expressed_list_final:  # 索引
         col1 = gene_GSE_adjusted_concated[col_name_1]
