@@ -22,6 +22,17 @@ def load_list_of_tuple(file_name_for_read):
     list_of_tuple = list(map(eval, list_of_str_numpy))
     return list_of_tuple
 
+def tuple_pair_2_gene_pair(tuple):
+    tuple1, tuple2 = tuple
+    print(tuple1, tuple2)
+    return (tuple1[1], tuple2[1])
+
+def save_list_of_RNA_str(list_of_tuple, file_name_to_save):
+    list_of_str = list(map(tuple_pair_2_gene_pair, list_of_tuple))
+    list_of_str_pd = pd.DataFrame(list_of_str)
+    list_of_str_pd.to_csv(file_name_to_save, index=False, header=False)
+    return
+
 def list_with_index(list_in_list, index_in_array):
     new_list = []
     for index_in_array_each in index_in_array:
