@@ -15,25 +15,27 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--SEED", type=int, default=int(time.time() * 100) % 399, help="")
 parser.add_argument("--relative_sig", type=str, default="20210301")
 parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020
+parser.add_argument("--dataset_random_state", type=int, default=1, help="")
 
 args = parser.parse_args()
 SEED = args.SEED
 relative_sig = args.relative_sig
 dataset = args.dataset
-
+dataset_random_state = args.dataset_random_state
 # parameters
 # dataset = "coco_nc2020"  2
 # relative_sig = "20210301"  1
 # # SEED = 6  3
 local_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
 
-folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}"
+folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}_dataRS{dataset_random_state}"
 result_final_save_path = f"results/final_model_results/{folder_name}"
 if not os.path.exists("results/final_model_results/"):
     os.makedirs("results/final_model_results/")
 
 # load pair selected
-path = "results/20210228_1_2level_coco_nc2020_seed51/biomarker/pair_after_lasso.csv"
+# path = "results/20210228_1_2level_coco_nc2020_seed51/biomarker/pair_after_lasso.csv"
+path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"
 pair_after_lasso = load_list_of_tuple(path)
 
 # load data
@@ -41,7 +43,7 @@ gene_GSE, label_GSE_concated = load_data_raw(dataset=dataset)
 gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
 gene_GSE_concated = gene_GSE_concated.T
 gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
-    gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=SEED)
+    gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
 label_train = get_label_multilabel(label_GSE_concated=label_GSE_concated_train)
 label_test = get_label_multilabel(label_GSE_concated=label_GSE_concated_test)
 

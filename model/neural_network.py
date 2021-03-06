@@ -88,7 +88,7 @@ class earlystop():
             # print(self.last_loss)
         return always_go_higher
 
-def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epochs=10000, sklearn_random=109, criterion_type="MSE", hidden_feature=256, batch_size=128, learning_rate=0.001, earlystop_turn_on=True, val_ratio=0.2):
+def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epochs=10000, sklearn_random=109, criterion_type="MSE", hidden_feature=256, batch_size=128, learning_rate=0.001, earlystop_turn_on=True, val_ratio=0.2, optimizer_str="Adam"):
     if val_ratio != 0:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_ratio, random_state=sklearn_random)
     else:
@@ -103,8 +103,17 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
     # print("NN output feature", num_classes)
     model = FCN(input_feature=X_train.shape[1], hidden_feature=hidden_feature, output_feature=num_classes)
     model = model.to(device)
+    if optimizer_str == "Adam":
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)  # 之前都是0.0001
+    elif optimizer_str == "Adagrad":
+        optimizer = optim.Adagrad(model.parameters(), lr=learning_rate)
+    else:
+        print("please check optimizer")
+        input()
+        return
+
     # optimizer = optim.Adam(model.parameters(), lr=learning_rate)  # 之前都是0.0001
-    optimizer = optim.Adagrad(model.parameters(), lr=learning_rate)  # 之前都是0.0001
+    # optimizer = optim.Adagrad(model.parameters(), lr=learning_rate)  # 之前都是0.0001
     if criterion_type == "CE":
         criterion = nn.CrossEntropyLoss()
     elif criterion_type == "MSE":
