@@ -22,12 +22,14 @@ if __name__ == "__main__":
     parser.add_argument("--classes_num", type=int, default=3, help="")
     parser.add_argument("--relative_sig", type=str, default="test_1")
     parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020
+    parser.add_argument("--dataset_random_state", type=int, default=1, help="")
 
     args = parser.parse_args()
     SEED = args.SEED
     classes_num = args.classes_num
     relative_sig = args.relative_sig
     dataset = args.dataset
+    dataset_random_state = args.dataset_random_state
     local_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
 
     def setup_seed(seed):
@@ -37,7 +39,7 @@ if __name__ == "__main__":
         random.seed(seed)
         torch.backends.cudnn.deterministic = True
     setup_seed(SEED)
-    folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}"
+    folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}_dataRS{dataset_random_state}"
     path_data_prepared = f"data_prepared/{folder_name}/"
     result_2categories_path = f"results/{folder_name}_loc{local_time}/2categories/"
     result_final_save_path = f"results/{folder_name}_loc{local_time}/concate/"
@@ -54,7 +56,8 @@ if __name__ == "__main__":
     gene_GSE, label_GSE_concated = load_data_raw(dataset=dataset)
     gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
     gene_GSE_concated = gene_GSE_concated.T
-    gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=1)
+    print(dataset_random_state)
+    gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
 
     # 3. 筛选出 pair_index的基因，获得划分阈值的电平
     ## iPAGE 筛选出显著的对
