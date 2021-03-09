@@ -23,6 +23,8 @@ if __name__ == "__main__":
     parser.add_argument("--relative_sig", type=str, default="test_1")
     parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020
     parser.add_argument("--dataset_random_state", type=int, default=1, help="")
+    parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random"
+    parser.add_argument('--test_cohort_index', nargs='+', type=int, default=[1])
 
     args = parser.parse_args()
     SEED = args.SEED
@@ -30,8 +32,10 @@ if __name__ == "__main__":
     relative_sig = args.relative_sig
     dataset = args.dataset
     dataset_random_state = args.dataset_random_state
+    test_mode = args.test_mode  # "cohort45"  # "random"
     local_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
-
+    test_cohort_index = args.test_cohort_index
+    print(test_cohort_index)
     def setup_seed(seed):
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
@@ -39,25 +43,66 @@ if __name__ == "__main__":
         random.seed(seed)
         torch.backends.cudnn.deterministic = True
     setup_seed(SEED)
-    folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}_dataRS{dataset_random_state}"
+    if len(test_cohort_index) != 0:
+        cohort_str = f"_cohort{test_cohort_index}"
+    else:
+        cohort_str = ""
+    folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}_dataRS{dataset_random_state}{cohort_str}"
+    print(folder_name)
     path_data_prepared = f"data_prepared/{folder_name}/"
-    result_2categories_path = f"results/{folder_name}_loc{local_time}/2categories/"
-    result_final_save_path = f"results/{folder_name}_loc{local_time}/concate/"
-    result_biomarker = f"results/{folder_name}_loc{local_time}/biomarker/"
+    result_2categories_path = f"results/{folder_name}/2categories/"
+    result_final_save_path = f"results/{folder_name}/concate/"
+    result_biomarker = f"results/{folder_name}/biomarker/"
     if not os.path.exists(path_data_prepared):
         os.makedirs(path_data_prepared)
     if not os.path.exists(result_2categories_path):
         os.makedirs(result_2categories_path)
-    if not os.path.exists(result_final_save_path):
-        os.makedirs(result_final_save_path)
     if not os.path.exists(result_biomarker):
         os.makedirs(result_biomarker)
     # 2. split the train set/ test set
-    gene_GSE, label_GSE_concated = load_data_raw(dataset=dataset)
-    gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
-    gene_GSE_concated = gene_GSE_concated.T
-    print(dataset_random_state)
-    gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+    # 2.1 cohort
+    if test_mode == "cohort":
+        gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+
+        all_index = range(len(gene_GSE))
+        # test_index = [4, 5]
+        test_index = test_cohort_index
+        train_index = list(set(all_index).difference(set(test_index)))
+        print("train_index", train_index)
+        print("test_index", test_index)
+        gene_GSE_train = list_with_index(gene_GSE, train_index)
+        gene_GSE_test = list_with_index(gene_GSE, test_index)
+
+        label_GSE_train = list_with_index(label_GSE, train_index)
+        label_GSE_test = list_with_index(label_GSE, test_index)
+
+        label_GSE_concated_train = pd.concat(label_GSE_train, axis=0)
+        gene_GSE_concated_train = pd.concat(gene_GSE_train, join="inner", axis=1)
+        gene_GSE_concated_train = gene_GSE_concated_train.T
+
+        label_GSE_concated_test = pd.concat(label_GSE_test, axis=0)
+        gene_GSE_concated_test = pd.concat(gene_GSE_test, join="inner", axis=1)
+        gene_GSE_concated_test = gene_GSE_concated_test.T
+        train_lens = gene_GSE_concated_train.shape[0]
+        test_lens = gene_GSE_concated_test.shape[0]
+        gene_GSE_concated_train_test_tmp = pd.concat([gene_GSE_concated_train, gene_GSE_concated_test], join="inner", axis=0)
+        gene_GSE_concated_train = gene_GSE_concated_train_test_tmp.iloc[:train_lens]
+        gene_GSE_concated_test = gene_GSE_concated_train_test_tmp.iloc[train_lens:]
+        print("gene_GSE_concated_train.shape", gene_GSE_concated_train.shape)
+        print("gene_GSE_concated_test.shape", gene_GSE_concated_test.shape)
+    elif test_mode == "random":
+        # 2.2random select
+        gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+        label_GSE_concated = pd.concat(label_GSE, axis=0)
+        gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
+        gene_GSE_concated = gene_GSE_concated.T
+        print(dataset_random_state)
+        gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+    else:
+        print("select unexist test mode")
+        input()
+        exit(1)
+
 
     # 3. 筛选出 pair_index的基因，获得划分阈值的电平
     ## iPAGE 筛选出显著的对
@@ -92,6 +137,8 @@ if __name__ == "__main__":
          "virus": [pair_index_selected_2.shape[0]]})
     num_pair_after_lasso_pd.to_csv(result_biomarker + "num_pair_after_lasso.csv")
     """
+    if not os.path.exists(result_final_save_path):
+    os.makedirs(result_final_save_path)
     # 5. 获得数据
     train_data_all = calculate_delta_and_relative_expression(pair_after_lasso, gene_GSE_concated_train)
     test_data_all = calculate_delta_and_relative_expression(pair_after_lasso, gene_GSE_concated_test)

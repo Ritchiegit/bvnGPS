@@ -11,9 +11,22 @@ from sklearn.ensemble import RandomForestClassifier
 from model.neural_network import NN_2layer_train_test
 def multi_eval(y_test, y_pred, result_save_path, model_name=None):
     y_pred_index = np.argmax(y_pred, axis=1)
-    AUC_0 = metrics.roc_auc_score(1*(y_test == 0), 1*(y_pred_index == 0))
-    AUC_1 = metrics.roc_auc_score(1*(y_test == 1), 1*(y_pred_index == 1))
-    AUC_2 = metrics.roc_auc_score(1*(y_test == 2), 1*(y_pred_index == 2))
+    AUC_0, AUC_1, AUC_2 = -1, -1, -1
+    try:
+        AUC_0 = metrics.roc_auc_score(1 * (y_test == 0), 1 * (y_pred_index == 0))
+    except ValueError:
+        print("uninfected wrong!")
+    try:
+        AUC_1 = metrics.roc_auc_score(1*(y_test == 1), 1*(y_pred_index == 1))
+    except ValueError:
+        print("bacteria wrong!")
+    try:
+        AUC_2 = metrics.roc_auc_score(1*(y_test == 2), 1*(y_pred_index == 2))
+    except ValueError:
+        print("virus wrong!")
+    # AUC_0 = metrics.roc_auc_score(1*(y_test == 0), 1*(y_pred_index == 0))
+    # AUC_1 = metrics.roc_auc_score(1*(y_test == 1), 1*(y_pred_index == 1))
+    # AUC_2 = metrics.roc_auc_score(1*(y_test == 2), 1*(y_pred_index == 2))
     #  print(f"{model_name},Health{AUC_0},Bacteria{AUC_1},Virus{AUC_2}\n")
     print(f"Health{AUC_0},Bacteria{AUC_1},Virus{AUC_2}\n")
     f = open(result_save_path, "a+")
@@ -56,26 +69,38 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     model_name = "RandomForest"
     print(model_name)
     multi_eval(y_test, y_pred_onehot, result_full_filepath, model_name)
+    hidden_feature = 256
+    optimizer_str = "Adam"
+    learning_rate = 0.001
+    y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 5000,
+                                  sklearn_random=sklearn_random, criterion_type="MSE",
+                                  hidden_feature=hidden_feature, learning_rate=learning_rate,
+                                  optimizer_str=optimizer_str)
+    model_name = f"NeuralNetworkMSE_opt{optimizer_str}_h{hidden_feature}_lr{learning_rate}"
+    print(model_name)
+    multi_eval(y_test, y_pred, result_full_filepath, model_name)
 
-    hidden_feature_to_search = [2, 4, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 500, 750, 1000]
-    learning_rates = [0.1, 0.01, 0.001, 0.0001]
-    optimizer_str_list = ["Adam", "Adagrad"]
-    for optimizer_str in optimizer_str_list:
-        for hidden_feature in hidden_feature_to_search:
-            # Neural Network
-            # hidden feature batch_size learning_rate (optimizer)
-            for learning_rate in learning_rates:
-                y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 10000, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate, optimizer_str=optimizer_str)
-                model_name = f"NeuralNetworkMSE_opt{optimizer_str}_h{hidden_feature}_lr{learning_rate}"
-                print(model_name)
-                multi_eval(y_test, y_pred, result_full_filepath, model_name)
-
+    # hidden_feature_to_search = [2, 4, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 500, 750, 1000]
+    # hidden_feature_to_search = [2,8, 32, 128, 256, 500, 1000]
+    # learning_rates = [0.1, 0.01, 0.001]
+    # optimizer_str_list = ["Adam", "Adagrad"]
+    # for optimizer_str in optimizer_str_list:
+    #     for hidden_feature in hidden_feature_to_search:
+    #         # Neural Network
+    #         # hidden feature batch_size learning_rate (optimizer)
+    #         for learning_rate in learning_rates:
+    #             y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 5000, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate, optimizer_str=optimizer_str)
+    #             model_name = f"NeuralNetworkMSE_opt{optimizer_str}_h{hidden_feature}_lr{learning_rate}"
+    #             print(model_name)
+    #             multi_eval(y_test, y_pred, result_full_filepath, model_name)
+    # optimizer_str = "Adagrad"
     # for max_epoch in [1, 2, 3, 4, 5, 6, 7, 10, 15, 20, 25, 35, 40, 50, 75, 100, 125, 150, 175, 200, 225, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000, 3000]:
     #     # Neural Network
     #     hidden_feature = 96
     #     learning_rate = 0.001
-    #     y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoch, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate, earlystop_turn_on=False, val_ratio=0)
-    #     model_name = f"Neural Network MSE epoch{max_epoch}"
+    #     y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoch, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate,
+    #                                   earlystop_turn_on=False, val_ratio=0, optimizer_str=optimizer_str)
+    #     model_name = f"Neural Network MSE epoch{max_epoch}_opt{optimizer_str}"
     #     print(model_name)
     #     multi_eval(y_test, y_pred, result_full_filepath, model_name)
 

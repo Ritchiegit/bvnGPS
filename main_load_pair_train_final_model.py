@@ -9,41 +9,106 @@ from data_processing.iPAGE import calculate_delta_and_relative_expression
 from data_processing.process_data_label import get_label_multilabel
 from load_data.load_data_raw import load_data_raw
 from summary_and_train import summary_and_train
-from utils import load_list_of_tuple
+from utils import load_list_of_tuple, list_with_index
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--SEED", type=int, default=int(time.time() * 100) % 399, help="")
-parser.add_argument("--relative_sig", type=str, default="20210301")
+parser.add_argument("--relative_sig", type=str, default="test_1")
 parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020
 parser.add_argument("--dataset_random_state", type=int, default=1, help="")
+parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random"
+parser.add_argument('--test_cohort_index', nargs='+', type=int, default=[1])
 
 args = parser.parse_args()
 SEED = args.SEED
 relative_sig = args.relative_sig
 dataset = args.dataset
 dataset_random_state = args.dataset_random_state
+test_mode = args.test_mode  # "cohort"  # "random"
+test_cohort_index = args.test_cohort_index
+
 # parameters
-# dataset = "coco_nc2020"  2
-# relative_sig = "20210301"  1
-# # SEED = 6  3
 local_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
 
-folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}_dataRS{dataset_random_state}"
+# if test_cohort_index is not None:
+if test_mode == "cohort":
+    cohort_str = f"_cohort{test_cohort_index}"
+else:
+    cohort_str = ""
+folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}_dataRS{dataset_random_state}{cohort_str}"
 result_final_save_path = f"results/final_model_results/{folder_name}"
 if not os.path.exists("results/final_model_results/"):
     os.makedirs("results/final_model_results/")
 
-# load pair selected
-# path = "results/20210228_1_2level_coco_nc2020_seed51/biomarker/pair_after_lasso.csv"
-path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"
-pair_after_lasso = load_list_of_tuple(path)
 
-# load data
-gene_GSE, label_GSE_concated = load_data_raw(dataset=dataset)
-gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
-gene_GSE_concated = gene_GSE_concated.T
-gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
-    gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+def select_common_gene_expression_from_train_test(gene_GSE_concated_train, gene_GSE_concated_test):
+    gene_feature_idx_list = []
+    for gene in [gene_GSE_concated_train, gene_GSE_concated_test]:
+        gene_feature_idx_list.append(gene.columns)
+    from functools import reduce
+    common_gene_feature_idx = reduce(np.intersect1d, gene_feature_idx_list)
+    gene_GSE_concated_train_new = gene_GSE_concated_train[common_gene_feature_idx]
+    gene_GSE_concated_test_new = gene_GSE_concated_test[common_gene_feature_idx]
+    return gene_GSE_concated_train_new, gene_GSE_concated_test_new
+
+# 2. split the train set/ test set
+# 2.1 cohort
+if test_mode == "cohort":
+    gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+
+    all_index = range(len(gene_GSE))
+    # test_index = [4, 5]
+    test_index = test_cohort_index
+
+    train_index = list(set(all_index).difference(set(test_index)))
+    print("train_index", train_index)
+    print("test_index", test_index)
+    gene_GSE_train = list_with_index(gene_GSE, train_index)
+    gene_GSE_test = list_with_index(gene_GSE, test_index)
+
+    label_GSE_train = list_with_index(label_GSE, train_index)
+    label_GSE_test = list_with_index(label_GSE, test_index)
+
+    label_GSE_concated_train = pd.concat(label_GSE_train, axis=0)
+    gene_GSE_concated_train = pd.concat(gene_GSE_train, join="inner", axis=1)
+    gene_GSE_concated_train = gene_GSE_concated_train.T
+
+    label_GSE_concated_test = pd.concat(label_GSE_test, axis=0)
+    gene_GSE_concated_test = pd.concat(gene_GSE_test, join="inner", axis=1)
+    gene_GSE_concated_test = gene_GSE_concated_test.T
+    train_lens = gene_GSE_concated_train.shape[0]
+    test_lens = gene_GSE_concated_test.shape[0]
+    print("train_lens", train_lens)
+    print("test_lens", test_lens)
+
+    gene_GSE_concated_train_new, gene_GSE_concated_test_new = select_common_gene_expression_from_train_test(gene_GSE_concated_train, gene_GSE_concated_test)
+    print("gene_GSE_concated_train_new.shape", gene_GSE_concated_train_new.shape)
+    print("gene_GSE_concated_test_new.shape", gene_GSE_concated_test_new.shape)
+
+    path = f"results/0308_cohort_val_marker_iPAGE_coco_nc2020_seed2_dataRS2_cohort{test_cohort_index}/biomarker/pair_after_lasso.csv"
+    # path = "results/0308_cohort_biomarker_iPAGE_coco_nc2020_seed1_dataRS1_loc20210308_111618/biomarker/pair_after_lasso.csv"  # 45
+    # path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"  # 7:3
+    pair_after_lasso = load_list_of_tuple(path)
+elif test_mode == "random":
+    # 2.2random select
+    gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+    label_GSE_concated = pd.concat(label_GSE, axis=0)
+    gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
+    gene_GSE_concated = gene_GSE_concated.T
+    print(dataset_random_state)
+    gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
+        gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+    # load pair selected
+    # path = "results/20210228_1_2level_coco_nc2020_seed51/biomarker/pair_after_lasso.csv"
+    path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"
+
+    pair_after_lasso = load_list_of_tuple(path)
+
+else:
+    print("select unexist test mode")
+    input()
+    exit(1)
+
 label_train = get_label_multilabel(label_GSE_concated=label_GSE_concated_train)
 label_test = get_label_multilabel(label_GSE_concated=label_GSE_concated_test)
 

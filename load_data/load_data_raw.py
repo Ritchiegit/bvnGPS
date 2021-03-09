@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import glob as glob
+
+
 def filter_label(gene_one_GSE, label, filter_num=3):
     label_still_index = np.nonzero(label["label"].values != filter_num)[0]
     if label_still_index.shape[0] != label.shape[0]:
@@ -9,12 +11,15 @@ def filter_label(gene_one_GSE, label, filter_num=3):
     gene_one_GSE_still = gene_one_GSE.iloc[:, label_still_index]
     return gene_one_GSE_still, label_still
 
-def load_data_raw(dataset="coconut", filter_nums=[3, 10]):
+
+def load_data_raw(dataset="coconut", filter_nums=None):
     """
     :param dataset: coconut coco_nc2020 test
     :param filter_nums:
     :return:
     """
+    if filter_nums is None:
+        filter_nums = [3, 10]
     if dataset == "coconut":
         GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "66099", "63990"]
         data_paths = ["data/coconut_20210127/"]
@@ -62,12 +67,15 @@ def load_data_raw(dataset="coconut", filter_nums=[3, 10]):
         label_GSE.append(label)  # pd
         print("***" * 10)
     print(sample_sum)
-    label_GSE_concated = pd.concat(label_GSE, axis=0)
-    return gene_GSE, label_GSE_concated
+    # label_GSE_concated = pd.concat(label_GSE, axis=0)
+    # return gene_GSE, label_GSE_concated
+    return gene_GSE, label_GSE
 
 
 if __name__ == "__main__":
-    gene_GSE, label_GSE_concated = load_data_raw()
-    print(label_GSE_concated["label"].values)
+    import os
+    os.chdir("..")
+    gene_GSE, label_GSE = load_data_raw()
+    label_GSE_concated = pd.concat(label_GSE, axis=0)
     num_classes = len(pd.Categorical(label_GSE_concated["label"].values).categories)
     print(num_classes)

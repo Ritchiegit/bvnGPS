@@ -12,7 +12,12 @@ import numpy as np
 from data_processing.iPAGE import calculate_delta_and_relative_expression
 
 def binary_eval(y_test, y_pred, result_save_path, model_name=None):
-    AUC = metrics.roc_auc_score(y_test, y_pred)
+    AUC = -1
+    try:
+        AUC = metrics.roc_auc_score(y_test, y_pred)
+    except ValueError:
+        print("one class wrong!")
+    # AUC = metrics.roc_auc_score(y_test, y_pred)
     print(model_name + " AUC: " + str(AUC))
     f = open(result_save_path, "a+")
     f.write(model_name + "," + str(AUC) + ",")
