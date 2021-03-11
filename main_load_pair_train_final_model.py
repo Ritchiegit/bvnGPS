@@ -17,7 +17,7 @@ parser.add_argument("--relative_sig", type=str, default="test_1")
 parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020
 parser.add_argument("--dataset_random_state", type=int, default=1, help="")
 parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random"
-parser.add_argument('--test_cohort_index', nargs='+', type=int, default=[1])
+parser.add_argument('--test_cohort_index', nargs='+', type=int, default=[5])
 
 args = parser.parse_args()
 SEED = args.SEED
@@ -85,7 +85,8 @@ if test_mode == "cohort":
     print("gene_GSE_concated_train_new.shape", gene_GSE_concated_train_new.shape)
     print("gene_GSE_concated_test_new.shape", gene_GSE_concated_test_new.shape)
 
-    path = f"results/0308_cohort_val_marker_iPAGE_coco_nc2020_seed2_dataRS2_cohort{test_cohort_index}/biomarker/pair_after_lasso.csv"
+    path = f"results/20210310_leave_one_val/20210310_cohort_val_marker_iPAGE_coco_nc2020_seed1_dataRS1_cohort{test_cohort_index}_threshold1e-16/biomarker/pair_after_lasso.csv"
+    # path = f"results/0308_leave_one_val/0308_cohort_val_marker_iPAGE_coco_nc2020_seed2_dataRS2_cohort{test_cohort_index}/biomarker/pair_after_lasso.csv"
     # path = "results/0308_cohort_biomarker_iPAGE_coco_nc2020_seed1_dataRS1_loc20210308_111618/biomarker/pair_after_lasso.csv"  # 45
     # path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"  # 7:3
     pair_after_lasso = load_list_of_tuple(path)

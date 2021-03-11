@@ -69,13 +69,27 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     model_name = "RandomForest"
     print(model_name)
     multi_eval(y_test, y_pred_onehot, result_full_filepath, model_name)
-    hidden_feature = 256
+
+
+    hidden_feature = 4
     optimizer_str = "Adam"
     learning_rate = 0.001
-    y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 5000,
+    y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 2000,
                                   sklearn_random=sklearn_random, criterion_type="MSE",
                                   hidden_feature=hidden_feature, learning_rate=learning_rate,
-                                  optimizer_str=optimizer_str)
+                                  optimizer_str=optimizer_str, model_str="FCN")
+    model_name = f"NeuralNetworkMSE_opt{optimizer_str}_h{hidden_feature}_lr{learning_rate}"
+    print(model_name)
+    multi_eval(y_test, y_pred, result_full_filepath, model_name)
+
+
+    hidden_feature = 4
+    optimizer_str = "Adam"
+    learning_rate = 0.001
+    y_pred = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 2000,
+                                  sklearn_random=sklearn_random, criterion_type="MSE",
+                                  hidden_feature=hidden_feature, learning_rate=learning_rate,
+                                  optimizer_str=optimizer_str, model_str="MoE")
     model_name = f"NeuralNetworkMSE_opt{optimizer_str}_h{hidden_feature}_lr{learning_rate}"
     print(model_name)
     multi_eval(y_test, y_pred, result_full_filepath, model_name)

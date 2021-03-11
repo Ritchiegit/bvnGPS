@@ -6,7 +6,9 @@ import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 import numpy as np
+from model.MoE import MoE
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class FCN(nn.Module):
     def __init__(self, input_feature=22583, hidden_feature=256, output_feature=2):
@@ -16,6 +18,7 @@ class FCN(nn.Module):
         self.linear = nn.Linear(input_feature, hidden_feature, bias=True).to(device)
         self.bn = nn.BatchNorm1d(self.hidden_feature).to(device)
         self.linear2 = nn.Linear(hidden_feature, output_feature, bias=True).to(device)
+
     def forward(self, x):
         x = self.linear(x)
         x = F.relu(x)
@@ -23,6 +26,9 @@ class FCN(nn.Module):
         x = self.linear2(x)
         x = F.softmax(x, dim=1)
         return x
+
+
+
 
 def evaluate(loader, model, criterion, num_classes=2):
     model.eval()
@@ -38,6 +44,7 @@ def evaluate(loader, model, criterion, num_classes=2):
         loss += bs * loss_batch
     average_loss = loss.cpu().detach().numpy() / total
     return average_loss
+
 
 def train(train_loader, model, criterion, optimizer, val_loader=None, num_classes=2):
     model.train()  # 启用dropout and batch normalization
@@ -64,10 +71,12 @@ def train(train_loader, model, criterion, optimizer, val_loader=None, num_classe
         val_loss = evaluate(val_loader, model, criterion, num_classes=num_classes)
     return train_loss, val_loss
 
+
 def pred(model, X_test):
     X_test_tc = torch.tensor(X_test, dtype=torch.float32).to(device)
     y_pred = model(X_test_tc).cpu().detach().numpy()
     return y_pred
+
 
 class earlystop():
     def __init__(self, number_of_go_higher_threshold=5):
@@ -80,28 +89,45 @@ class earlystop():
         if len(self.last_loss) > self.number_of_go_higher_threshold:
             self.last_loss.pop(0)
             always_go_higher = True
-            for i in range(len(self.last_loss)-1):
-                if self.last_loss[i] > self.last_loss[i+1]:  # 有降低说明还没有一直升高。
+            for i in range(len(self.last_loss) - 1):
+                if self.last_loss[i] > self.last_loss[i + 1]:  # 有降低说明还没有一直升高。
                     always_go_higher = False
                     break
             # if always_go_higher == True:
             # print(self.last_loss)
         return always_go_higher
 
-def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epochs=10000, sklearn_random=109, criterion_type="MSE", hidden_feature=256, batch_size=128, learning_rate=0.001, earlystop_turn_on=True, val_ratio=0.2, optimizer_str="Adam"):
+
+def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epochs=10000, sklearn_random=109,
+                         criterion_type="MSE", hidden_feature=256, batch_size=128, learning_rate=0.001,
+                         earlystop_turn_on=True, val_ratio=0.2, optimizer_str="Adam", model_str="FCN"):
     if val_ratio != 0:
-        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_ratio, random_state=sklearn_random)
+        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_ratio,
+                                                          random_state=sklearn_random)
     else:
         X_val = np.array([0])
         y_val = np.array([0])
-    X_train_tc, X_val_tc, y_train_tc, y_val_tc = torch.from_numpy(X_train).to(device), torch.from_numpy(X_val).to(device), torch.from_numpy(y_train).to(device), torch.from_numpy(y_val).to(device)
+    X_train_tc, X_val_tc, y_train_tc, y_val_tc = torch.from_numpy(X_train).to(device), torch.from_numpy(X_val).to(
+        device), torch.from_numpy(y_train).to(device), torch.from_numpy(y_val).to(device)
     data_train_tc_tensorDataset = TensorDataset(X_train_tc, y_train_tc)
     data_val_tc_tensorDataset = TensorDataset(X_val_tc, y_val_tc)
     train_loader = DataLoader(data_train_tc_tensorDataset, batch_size=batch_size)
     val_loader = DataLoader(data_val_tc_tensorDataset, batch_size=batch_size)
     # print("NN input feature number", X_train.shape[1])
     # print("NN output feature", num_classes)
-    model = FCN(input_feature=X_train.shape[1], hidden_feature=hidden_feature, output_feature=num_classes)
+
+    if model_str == "FCN":
+        print("in FCN")
+        model = FCN(input_feature=X_train.shape[1], hidden_feature=hidden_feature, output_feature=num_classes)
+    elif model_str == "MoE":
+        print("in MoE")
+        model = MoE(input_feature=X_train.shape[1], hidden_feature=hidden_feature, output_feature=num_classes)
+    else:
+        print("model is not FCN or MoE")
+        input()
+        exit(1)
+        return
+
     model = model.to(device)
     if optimizer_str == "Adam":
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)  # 之前都是0.0001
@@ -132,7 +158,8 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
                                              num_classes=num_classes)
                 t.set_description(f"Epoch:{i_epoch}, train loss: {train_loss:.10f}")
             else:
-                train_loss, val_loss = train(train_loader, model, criterion, optimizer=optimizer, val_loader=val_loader, num_classes=num_classes)
+                train_loss, val_loss = train(train_loader, model, criterion, optimizer=optimizer, val_loader=val_loader,
+                                             num_classes=num_classes)
                 t.set_description(f"Epoch:{i_epoch}, train loss: {train_loss:.10f}, val loss: {val_loss:.10f}")
                 if val_loss < min_val_loss:
                     # torch.save(model.state_dict(), f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}")
@@ -143,10 +170,9 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
                 if always_go_higher == True:
                     break
         torch.save(model.state_dict(),
-                       f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}.pth")
+                   f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}.pth")
     y_pred = pred(model=model, X_test=X_test)
     return y_pred
-
 
 # torch.save(model.state_dict(), PATH)
 # model = TheModelClass(*args, **kwargs)
