@@ -2,9 +2,9 @@ import numpy as np
 from data_processing.iPAGE import get_delta_with_fisher_exact_test
 
 
-def get_data_with_ipage(gene_GSE_concated, label):
+def get_data_with_ipage(gene_GSE_concated, label, threshold):
     delta_in_pair_pandas, pair_index_exact_expressed_list_final = get_delta_with_fisher_exact_test(
-        gene_GSE_concated, label)
+        gene_GSE_concated, label, threshold)
     delta_2level = (delta_in_pair_pandas <= 0) * (-1) + (delta_in_pair_pandas > 0) * 1
     data = delta_2level.values
     return data, pair_index_exact_expressed_list_final

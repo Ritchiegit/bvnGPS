@@ -21,10 +21,10 @@ def load_data_raw(dataset="coconut", filter_nums=None):
     if filter_nums is None:
         filter_nums = [3, 10]
     if dataset == "coconut":
-        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "66099", "63990"]
+        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "66099", "63990"]  # 顺序需要注意
         data_paths = ["data/coconut_20210127/"]
     elif dataset == "coco_nc2020":
-        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990", "66099",
+        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990", "66099",  # 顺序需要注意
                    "21802", "27131", "28750", "42834", "57065", "68310", "69528", "111368"]
         data_paths = ["data/coconut_20210127/", "data/nc2020/"]
     elif dataset == "test":

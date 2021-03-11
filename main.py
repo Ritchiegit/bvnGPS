@@ -25,6 +25,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_random_state", type=int, default=1, help="")
     parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random"
     parser.add_argument('--test_cohort_index', nargs='+', type=int, default=[1])
+    parser.add_argument("--ipage_threshold", type=float, default=1e-16)
 
     args = parser.parse_args()
     SEED = args.SEED
@@ -36,6 +37,7 @@ if __name__ == "__main__":
     local_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
     test_cohort_index = args.test_cohort_index
     print(test_cohort_index)
+    ipage_threshold = args.ipage_threshold
     def setup_seed(seed):
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
@@ -47,7 +49,8 @@ if __name__ == "__main__":
         cohort_str = f"_cohort{test_cohort_index}"
     else:
         cohort_str = ""
-    folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}_dataRS{dataset_random_state}{cohort_str}"
+    folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}" \
+                  f"_dataRS{dataset_random_state}{cohort_str}_threshold{ipage_threshold}"
     print(folder_name)
     path_data_prepared = f"data_prepared/{folder_name}/"
     result_2categories_path = f"results/{folder_name}/2categories/"
@@ -110,11 +113,11 @@ if __name__ == "__main__":
     ### 在测试集上同样筛选出与上一行相同的对
     ## 使用LASSO在上面进行训练 获得筛选出来的pair
     pair_index_selected_0, pair_index_exact_expressed_list_final_0 = biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test,
-                                                                                                                        "control", path_data_prepared, result_2categories_path, local_time=local_time, SEED=SEED)
+                                                                                                                        "control", path_data_prepared, result_2categories_path, local_time=local_time, SEED=SEED, threshold=ipage_threshold)
     pair_index_selected_1, pair_index_exact_expressed_list_final_1 = biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test,
-                                                                                                                        "bacteria", path_data_prepared, result_2categories_path, local_time=local_time, SEED=SEED)
+                                                                                                                        "bacteria", path_data_prepared, result_2categories_path, local_time=local_time, SEED=SEED, threshold=ipage_threshold)
     pair_index_selected_2, pair_index_exact_expressed_list_final_2 = biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test,
-                                                                                                                        "virus", path_data_prepared, result_2categories_path, local_time=local_time, SEED=SEED)
+                                                                                                                        "virus", path_data_prepared, result_2categories_path, local_time=local_time, SEED=SEED, threshold=ipage_threshold)
 
     # 4. 总结跳出的pair并存储
     pair_after_lasso_0 = list_with_index(pair_index_exact_expressed_list_final_0, pair_index_selected_0)

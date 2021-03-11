@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import itertools
-
+from tqdm import tqdm
 
 def comb_mine(N, k):
     up = np.math.factorial(N)
@@ -16,6 +16,8 @@ def fisher_exact_test(gene_GSE_T, label, threshold=1e-16):
     len_gene = len(gene_GSE_T.columns)
     pair_index_exact_expressed = []
     pair_index_exact = []
+    max_num = len_gene * (len_gene - 1) / 2
+    # max_num = 0
     for i in range(0, len_gene - 1):
         for j in range(i + 1, len_gene):
             pair_each = data[:, i] > data[:, j]
@@ -28,7 +30,8 @@ def fisher_exact_test(gene_GSE_T, label, threshold=1e-16):
             if p < threshold:
                 pair_index_exact.append((i, j))
                 pair_index_exact_expressed.append((columns[i], columns[j]))
-    return pair_index_exact, pair_index_exact_expressed
+            # max_num += 1
+    return pair_index_exact, pair_index_exact_expressed, max_num
 
 
 def load_pathway():
@@ -42,7 +45,7 @@ def load_pathway():
     return gene_in_pathways
 
 
-def get_delta_with_fisher_exact_test(gene_GSE_adjusted_concated, label):
+def get_delta_with_fisher_exact_test(gene_GSE_adjusted_concated, label, threshold=1e-16):
     """
     :param gene_GSE_adjusted_concated: pandas data frame concated
     :param label:
@@ -72,22 +75,26 @@ def get_delta_with_fisher_exact_test(gene_GSE_adjusted_concated, label):
         gene_GSE_in_pathways.append(gene_GSE_in_pathway)
     # 计算每个pathway中pair的结果。
     pair_index_exact_expressed_list = []
-    i = 0
+    print("threshold of ipage", threshold)
     print("in fisher exact test of all pathway")
-    for gene_GSE_in_pathway in gene_GSE_in_pathways:
-        i += 1
-        pair_index_exact, pair_index_exact_expressed = fisher_exact_test(gene_GSE_in_pathway, label)
+    print("calculate fisher exact in pathway")
+    sum_max_num = 0
+    for gene_GSE_in_pathway in tqdm(gene_GSE_in_pathways):
+        pair_index_exact, pair_index_exact_expressed, max_num = fisher_exact_test(gene_GSE_in_pathway, label, threshold)
         pair_index_exact_expressed_list.append(pair_index_exact_expressed)  # pair name
+        sum_max_num += max_num
     print("after fisher exact test of all pathway")
     pair_index_exact_expressed_list_final = list(set(list(itertools.chain(*pair_index_exact_expressed_list))))
     # pair_index_exact_expressed_list_final = sorted(pair_index_exact_expressed_list_final)  # 可用于保证输出的pair次序相同，但本行代码不对最终结果产生影响。
     delta_in_pair_list = []
-    for col_name_1, col_name_2 in pair_index_exact_expressed_list_final:  # 索引
+    for col_name_1, col_name_2 in tqdm(pair_index_exact_expressed_list_final):  # 索引
         col1 = gene_GSE_adjusted_concated[col_name_1]
         col2 = gene_GSE_adjusted_concated[col_name_2]
         delta_in_pair = col1 - col2
         delta_in_pair_list.append(delta_in_pair)
     delta_in_pair_pandas = pd.concat(delta_in_pair_list, axis=1)
+    print("len(delta_in_pair_list)", len(delta_in_pair_list))
+    print("sum_max_num", sum_max_num)
     return delta_in_pair_pandas, pair_index_exact_expressed_list_final
 
 

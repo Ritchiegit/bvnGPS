@@ -35,7 +35,7 @@ def train_eval(X_train, X_test, y_train, y_test, result_save_path, SEED=None):
     return clf.coef_, lasso_coef_pair_index
 
 
-def biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test, label_selected="control", path_data_prepared="data_prepared/test/", result_path = "results/test/2categories/", local_time=0, SEED=None):
+def biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test, label_selected="control", path_data_prepared="data_prepared/test/", result_path = "results/test/2categories/", local_time=0, SEED=None, threshold=1e-16):
     """
     :param label_selected:  select from "control" "bacteria" "virus" "coinfected"
     :param path_data_prepared:
@@ -71,7 +71,7 @@ def biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_
     if os.path.exists(prepared_data_path):
         data_train, pair_index_exact_expressed_list_final = pickle.load(open(prepared_data_path, "rb"))
     else:
-        data_train, pair_index_exact_expressed_list_final = get_data_with_ipage(gene_GSE_concated_train, label_train)
+        data_train, pair_index_exact_expressed_list_final = get_data_with_ipage(gene_GSE_concated_train, label_train, threshold=threshold)
         pickle.dump((data_train, pair_index_exact_expressed_list_final), open(prepared_data_path, "wb"))
     data_test = calculate_delta_and_relative_expression(pair_index_exact_expressed_list_final, gene_GSE_concated_test)
 
