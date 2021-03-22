@@ -45,7 +45,7 @@ if __name__ == "__main__":
         random.seed(seed)
         torch.backends.cudnn.deterministic = True
     setup_seed(SEED)
-    if len(test_cohort_index) != 0:
+    if test_mode == "cohort":
         cohort_str = f"_cohort{test_cohort_index}"
     else:
         cohort_str = ""

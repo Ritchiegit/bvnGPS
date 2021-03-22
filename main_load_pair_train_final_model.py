@@ -85,7 +85,8 @@ if test_mode == "cohort":
     print("gene_GSE_concated_train_new.shape", gene_GSE_concated_train_new.shape)
     print("gene_GSE_concated_test_new.shape", gene_GSE_concated_test_new.shape)
 
-    path = f"results/20210310_leave_one_val/20210310_cohort_val_marker_iPAGE_coco_nc2020_seed1_dataRS1_cohort{test_cohort_index}_threshold1e-16/biomarker/pair_after_lasso.csv"
+    path = f"results/20210311_1_common_gene/20210311_1_data37_marker_iPAGE_coco_nc2020_seed1_dataRS1_cohort{test_cohort_index}_threshold1e-16/biomarker/pair_after_lasso.csv"
+    # path = f"results/20210310_leave_one_val/20210310_cohort_val_marker_iPAGE_coco_nc2020_seed1_dataRS1_cohort{test_cohort_index}_threshold1e-16/biomarker/pair_after_lasso.csv"
     # path = f"results/0308_leave_one_val/0308_cohort_val_marker_iPAGE_coco_nc2020_seed2_dataRS2_cohort{test_cohort_index}/biomarker/pair_after_lasso.csv"
     # path = "results/0308_cohort_biomarker_iPAGE_coco_nc2020_seed1_dataRS1_loc20210308_111618/biomarker/pair_after_lasso.csv"  # 45
     # path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"  # 7:3
@@ -101,10 +102,11 @@ elif test_mode == "random":
         gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
     # load pair selected
     # path = "results/20210228_1_2level_coco_nc2020_seed51/biomarker/pair_after_lasso.csv"
-    path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"
-
+    # path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"
+    # path = "results/20210311_1_common_gene/20210311_1_data37_marker_iPAGE_coco_nc2020_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso.csv"
+    path = "results/20210311_1_common_gene/20210311_1_data37_marker_iPAGE_coco_nc2020_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso_removeHERC2_UBE2C.csv"
     pair_after_lasso = load_list_of_tuple(path)
-
+    assert len(pair_after_lasso) == 49
 else:
     print("select unexist test mode")
     input()

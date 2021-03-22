@@ -8,7 +8,9 @@ from tqdm import tqdm
 import numpy as np
 from model.MoE import MoE
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+from model.mmoe import MMoE
+from model.mmoe import Config
+from model.multi_layers_FCN import mutli_layers_FCN
 
 class FCN(nn.Module):
     def __init__(self, input_feature=22583, hidden_feature=256, output_feature=2):
@@ -100,7 +102,8 @@ class earlystop():
 
 def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epochs=10000, sklearn_random=109,
                          criterion_type="MSE", hidden_feature=256, batch_size=128, learning_rate=0.001,
-                         earlystop_turn_on=True, val_ratio=0.2, optimizer_str="Adam", model_str="FCN"):
+                         earlystop_turn_on=True, val_ratio=0.2, optimizer_str="Adam", model_str="FCN", config=None,
+                         hidden_feature_list=None):
     if val_ratio != 0:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_ratio,
                                                           random_state=sklearn_random)
@@ -122,6 +125,20 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
     elif model_str == "MoE":
         print("in MoE")
         model = MoE(input_feature=X_train.shape[1], hidden_feature=hidden_feature, output_feature=num_classes)
+    elif model_str == "MMoE":
+        print("in MMoE")
+        if config is None:
+            config = Config()
+        config.num_feature = X_train.shape[1]
+        model = MMoE(config=config)  # config=Config()
+    elif model_str == "multi_layers_FCN":
+        print("in multi_layers_FCN")
+        if hidden_feature_list == None:
+            print("please")
+            input()
+            exit(1)
+            return
+        model = mutli_layers_FCN(input_feature=X_train.shape[1], hidden_feature_list=hidden_feature_list, output_feature=num_classes)
     else:
         print("model is not FCN or MoE")
         input()
@@ -150,6 +167,7 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
         return
     es = earlystop()
     min_val_loss = 1e10
+    end_epoch = max_epochs
     with tqdm(range(max_epochs)) as t:
 
         for i_epoch in t:  # tqdm(range(max_epochs)):
@@ -168,11 +186,12 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
                     continue
                 always_go_higher = es.save_loss_and_check_it_is_always_go_higher(val_loss)
                 if always_go_higher == True:
+                    end_epoch = i_epoch
                     break
         torch.save(model.state_dict(),
-                   f"weights/FCN_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}.pth")
+                   f"weights/{model_str}_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}_epoch{end_epoch}.pth")
     y_pred = pred(model=model, X_test=X_test)
-    return y_pred
+    return y_pred, end_epoch
 
 # torch.save(model.state_dict(), PATH)
 # model = TheModelClass(*args, **kwargs)
