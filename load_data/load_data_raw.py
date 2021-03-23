@@ -30,6 +30,10 @@ def load_data_raw(dataset="coconut", filter_nums=None):
     elif dataset == "test":
         GSE_IDs = ["40012"]
         data_paths = ["data/coconut_20210127/"]
+    elif dataset == "GSE6269":
+        # GSE_IDs = ["6269_1"]  # , "6269_2", "6269_3"]
+        GSE_IDs = ["6269_2", "6269_3"]  # , "", "6269_3"]
+        data_paths = ["data/host2016_20210322/"]
     else:
         print("请检查数据集字符串格式")
         input()

@@ -6,28 +6,14 @@ import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 import numpy as np
+from model.FCN import FCN
 from model.MoE import MoE
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from model.mmoe import MMoE
 from model.mmoe import Config
 from model.multi_layers_FCN import mutli_layers_FCN
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-class FCN(nn.Module):
-    def __init__(self, input_feature=22583, hidden_feature=256, output_feature=2):
-        super(FCN, self).__init__()
-        self.hidden_feature = hidden_feature
-        self.output_feature = output_feature
-        self.linear = nn.Linear(input_feature, hidden_feature, bias=True).to(device)
-        self.bn = nn.BatchNorm1d(self.hidden_feature).to(device)
-        self.linear2 = nn.Linear(hidden_feature, output_feature, bias=True).to(device)
 
-    def forward(self, x):
-        x = self.linear(x)
-        x = F.relu(x)
-        x = self.bn(x)
-        x = self.linear2(x)
-        x = F.softmax(x, dim=1)
-        return x
 
 
 
@@ -103,7 +89,7 @@ class earlystop():
 def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epochs=10000, sklearn_random=109,
                          criterion_type="MSE", hidden_feature=256, batch_size=128, learning_rate=0.001,
                          earlystop_turn_on=True, val_ratio=0.2, optimizer_str="Adam", model_str="FCN", config=None,
-                         hidden_feature_list=None):
+                         hidden_feature_list=None, model_save_folder_path="weights",  model_name_for_save=None):
     if val_ratio != 0:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_ratio,
                                                           random_state=sklearn_random)
@@ -188,8 +174,8 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
                 if always_go_higher == True:
                     end_epoch = i_epoch
                     break
-        torch.save(model.state_dict(),
-                   f"weights/{model_str}_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}_epoch{end_epoch}.pth")
+        # torch.save(model.state_dict(), f"{model_save_folder_path}/{model_str}_i{X_train.shape[1]}_h{hidden_feature}_bs{batch_size}_lr{learning_rate}_val{val_loss}_epoch{end_epoch}.pth")
+        torch.save(model, f"{model_save_folder_path}/{model_name_for_save}_val{val_loss}_epoch{end_epoch}.pth")
     y_pred = pred(model=model, X_test=X_test)
     return y_pred, end_epoch
 

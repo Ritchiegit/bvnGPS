@@ -16,7 +16,7 @@ parser.add_argument("--SEED", type=int, default=int(time.time() * 100) % 399, he
 parser.add_argument("--relative_sig", type=str, default="test_1")
 parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020
 parser.add_argument("--dataset_random_state", type=int, default=1, help="")
-parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random"
+parser.add_argument("--test_mode", type=str, default="random")  # "cohort", "random"
 parser.add_argument('--test_cohort_index', nargs='+', type=int, default=[5])
 
 args = parser.parse_args()
@@ -81,9 +81,9 @@ if test_mode == "cohort":
     print("train_lens", train_lens)
     print("test_lens", test_lens)
 
-    gene_GSE_concated_train_new, gene_GSE_concated_test_new = select_common_gene_expression_from_train_test(gene_GSE_concated_train, gene_GSE_concated_test)
-    print("gene_GSE_concated_train_new.shape", gene_GSE_concated_train_new.shape)
-    print("gene_GSE_concated_test_new.shape", gene_GSE_concated_test_new.shape)
+    # gene_GSE_concated_train_new, gene_GSE_concated_test_new = select_common_gene_expression_from_train_test(gene_GSE_concated_train, gene_GSE_concated_test)
+    # print("gene_GSE_concated_train_new.shape", gene_GSE_concated_train_new.shape)
+    # print("gene_GSE_concated_test_new.shape", gene_GSE_concated_test_new.shape)
 
     path = f"results/20210311_1_common_gene/20210311_1_data37_marker_iPAGE_coco_nc2020_seed1_dataRS1_cohort{test_cohort_index}_threshold1e-16/biomarker/pair_after_lasso.csv"
     # path = f"results/20210310_leave_one_val/20210310_cohort_val_marker_iPAGE_coco_nc2020_seed1_dataRS1_cohort{test_cohort_index}_threshold1e-16/biomarker/pair_after_lasso.csv"
