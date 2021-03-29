@@ -12,6 +12,7 @@ from model.mmoe import MMoE
 from model.mmoe import Config
 from model.multi_layers_FCN import mutli_layers_FCN
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")  # TODO cpu
 
 
 

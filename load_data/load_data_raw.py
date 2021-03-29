@@ -34,6 +34,46 @@ def load_data_raw(dataset="coconut", filter_nums=None):
         # GSE_IDs = ["6269_1"]  # , "6269_2", "6269_3"]
         GSE_IDs = ["6269_2", "6269_3"]  # , "", "6269_3"]
         data_paths = ["data/host2016_20210322/"]
+    elif dataset == "all_exclude_21802_57065":
+        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990", "66099",  # 顺序需要注意
+                            "27131", "28750", "42834",          "68310", "69528", "111368",
+                   "6269_2", "6269_3"]
+                   # "6269_1", "6269_2", "6269_3"]  # 如果使用 GPL2507 处理出来的数据集 共有基因个数只有4794个 可能很影响性能。
+        data_paths = ["data/coconut_20210127/", "data/nc2020/", "data/host2016_20210322/"]
+    elif dataset == "only_21802_57065":
+        GSE_IDs = ["21802", "57065"]
+        data_paths = ["data/nc2020/"]
+    elif dataset == "COVID19":
+        GSE_IDs = ["152418"] #, "157859", "166253"]
+        data_paths = ["data/COVID19/"]
+
+    elif dataset == "all_exclude_57065":
+        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990", "66099",  # 顺序需要注意
+                   "21802", "27131", "28750", "42834",          "68310", "69528", "111368",
+                   "6269_2", "6269_3"]
+        data_paths = ["data/coconut_20210127/", "data/nc2020/", "data/host2016_20210322/"]
+    elif dataset == "all_exclude_21802":
+        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990", "66099",  # 顺序需要注意
+                            "27131", "28750", "42834", "57065", "68310", "69528", "111368",
+                   "6269_2", "6269_3"]
+        data_paths = ["data/coconut_20210127/", "data/nc2020/", "data/host2016_20210322/"]
+    elif dataset == "coco_nc2020_host":
+        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990", "66099",  # 顺序需要注意
+                   "21802", "27131", "28750", "42834", "57065", "68310", "69528", "111368",
+                   "6269_2", "6269_3"]
+        data_paths = ["data/coconut_20210127/", "data/nc2020/", "data/host2016_20210322/"]
+    elif dataset == "coco_nc2020_exclude_57065":
+        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990", "66099",  # 顺序需要注意
+                   "21802", "27131", "28750", "42834",          "68310", "69528", "111368",
+                   ]
+        data_paths = ["data/coconut_20210127/", "data/nc2020/"]
+
+    elif dataset == "only_21802":
+        GSE_IDs = ["21802"]
+        data_paths = ["data/nc2020/"]
+    elif dataset == "only_57065":
+        GSE_IDs = ["57065"]
+        data_paths = ["data/nc2020/"]
     else:
         print("请检查数据集字符串格式")
         input()
@@ -79,7 +119,24 @@ def load_data_raw(dataset="coconut", filter_nums=None):
 if __name__ == "__main__":
     import os
     os.chdir("..")
-    gene_GSE, label_GSE = load_data_raw()
+    # gene_GSE, label_GSE = load_data_raw(dataset="only_21802_57065")
+    gene_GSE, label_GSE = load_data_raw(dataset="all_exclude_21802_57065")
+    # gene_GSE, label_GSE = load_data_raw(dataset="COVID19")
+    # gene_GSE, label_GSE = load_data_raw(dataset="GSE6269")
     label_GSE_concated = pd.concat(label_GSE, axis=0)
+    gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
+    gene_GSE_concated = gene_GSE_concated.T
+    # for gene_GSE_one in gene_GSE:
+        # print(gene_GSE_one)
+    print(label_GSE_concated.shape)
+    print(gene_GSE_concated.shape)
     num_classes = len(pd.Categorical(label_GSE_concated["label"].values).categories)
     print(num_classes)
+    from data_processing.process_data_label import get_label_multilabel
+    label = get_label_multilabel(label_GSE_concated)
+    def sumall(label, zhi):
+        return sum(label == zhi)
+    a = sumall(label, 0)
+    b = sumall(label, 1)
+    c = sumall(label, 2)
+    print(a, b, c)

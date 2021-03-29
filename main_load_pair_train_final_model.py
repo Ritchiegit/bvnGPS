@@ -14,10 +14,11 @@ from utils import load_list_of_tuple, list_with_index
 parser = argparse.ArgumentParser()
 parser.add_argument("--SEED", type=int, default=int(time.time() * 100) % 399, help="")
 parser.add_argument("--relative_sig", type=str, default="test_1")
-parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020
+parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020 GSE6269 all_exclude_21802_57065 only_21802_57065
 parser.add_argument("--dataset_random_state", type=int, default=1, help="")
 parser.add_argument("--test_mode", type=str, default="random")  # "cohort", "random"
 parser.add_argument('--test_cohort_index', nargs='+', type=int, default=[5])
+parser.add_argument("--pair_path", type=str, default="results/20210325_external2_1_common_gene/20210325_external2_1_iPAGE_all_exclude_21802_57065_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso.csv")  # "cohort", "random"
 
 args = parser.parse_args()
 SEED = args.SEED
@@ -26,6 +27,7 @@ dataset = args.dataset
 dataset_random_state = args.dataset_random_state
 test_mode = args.test_mode  # "cohort"  # "random"
 test_cohort_index = args.test_cohort_index
+pair_path = args.pair_path
 
 # parameters
 local_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
@@ -40,16 +42,6 @@ result_final_save_path = f"results/final_model_results/{folder_name}"
 if not os.path.exists("results/final_model_results/"):
     os.makedirs("results/final_model_results/")
 
-
-def select_common_gene_expression_from_train_test(gene_GSE_concated_train, gene_GSE_concated_test):
-    gene_feature_idx_list = []
-    for gene in [gene_GSE_concated_train, gene_GSE_concated_test]:
-        gene_feature_idx_list.append(gene.columns)
-    from functools import reduce
-    common_gene_feature_idx = reduce(np.intersect1d, gene_feature_idx_list)
-    gene_GSE_concated_train_new = gene_GSE_concated_train[common_gene_feature_idx]
-    gene_GSE_concated_test_new = gene_GSE_concated_test[common_gene_feature_idx]
-    return gene_GSE_concated_train_new, gene_GSE_concated_test_new
 
 # 2. split the train set/ test set
 # 2.1 cohort
@@ -85,12 +77,13 @@ if test_mode == "cohort":
     # print("gene_GSE_concated_train_new.shape", gene_GSE_concated_train_new.shape)
     # print("gene_GSE_concated_test_new.shape", gene_GSE_concated_test_new.shape)
 
-    path = f"results/20210311_1_common_gene/20210311_1_data37_marker_iPAGE_coco_nc2020_seed1_dataRS1_cohort{test_cohort_index}_threshold1e-16/biomarker/pair_after_lasso.csv"
+    # path = f"results/20210311_1_common_gene/20210311_1_data37_marker_iPAGE_coco_nc2020_seed1_dataRS1_cohort{test_cohort_index}_threshold1e-16/biomarker/pair_after_lasso.csv"
     # path = f"results/20210310_leave_one_val/20210310_cohort_val_marker_iPAGE_coco_nc2020_seed1_dataRS1_cohort{test_cohort_index}_threshold1e-16/biomarker/pair_after_lasso.csv"
     # path = f"results/0308_leave_one_val/0308_cohort_val_marker_iPAGE_coco_nc2020_seed2_dataRS2_cohort{test_cohort_index}/biomarker/pair_after_lasso.csv"
     # path = "results/0308_cohort_biomarker_iPAGE_coco_nc2020_seed1_dataRS1_loc20210308_111618/biomarker/pair_after_lasso.csv"  # 45
     # path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"  # 7:3
-    pair_after_lasso = load_list_of_tuple(path)
+    pair_after_lasso = load_list_of_tuple(pair_path)
+
 elif test_mode == "random":
     # 2.2random select
     gene_GSE, label_GSE = load_data_raw(dataset=dataset)
@@ -104,9 +97,12 @@ elif test_mode == "random":
     # path = "results/20210228_1_2level_coco_nc2020_seed51/biomarker/pair_after_lasso.csv"
     # path = "results/20210304_common_gene/0304_biomarker_df_dataset_iPAGE_coco_nc2020_seed69_dataRS1_loc20210304_224937/biomarker/pair_after_lasso.csv"
     # path = "results/20210311_1_common_gene/20210311_1_data37_marker_iPAGE_coco_nc2020_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso.csv"
-    path = "results/20210311_1_common_gene/20210311_1_data37_marker_iPAGE_coco_nc2020_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso_removeHERC2_UBE2C.csv"
-    pair_after_lasso = load_list_of_tuple(path)
-    assert len(pair_after_lasso) == 49
+    # path = "results/20210311_1_common_gene/20210311_1_data37_marker_iPAGE_coco_nc2020_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso_removeHERC2_UBE2C.csv"
+    # path = "results/20210323_1_common_gene/20210323_external2_1_iPAGE_all_exclude_21802_57065_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso.csv"
+    # pair_path = "results/20210325_external2_1_common_gene/20210325_external2_1_iPAGE_all_exclude_21802_57065_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso.csv"
+    pair_after_lasso = load_list_of_tuple(pair_path)
+    print("len(pair_after_lasso)", len(pair_after_lasso))
+    # assert len(pair_after_lasso) == 56
 else:
     print("select unexist test mode")
     input()

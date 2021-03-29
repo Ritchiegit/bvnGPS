@@ -10,6 +10,9 @@ import torch
 import numpy as np
 import os
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")  # TODO cpu
+
+
 num_classes = 3
 
 
@@ -22,29 +25,33 @@ def test_lda_RF(lda_path, RF_path, data, label, result_final_save_path, model_na
     y_pred_onehot = np.eye(num_classes)[y_pred]
     AUC_0, AUC_1, AUC_2, AUC_mean = multi_eval(label, y_pred_onehot, result_final_save_path, model_name=model_name)
 
-    return AUC_0, AUC_1, AUC_2, AUC_mean
+    return AUC_0, AUC_1, AUC_2, y_pred, y_pred_onehot
 
 
 def test_sklearn(clf_path, data, label, result_final_save_path, model_name):  # CART SVM
     clf = pickle.load(open(clf_path, "rb"))
     y_pred = clf.predict(data)
+    # print(y_pred)
     y_pred_onehot = np.eye(num_classes)[y_pred]
-    print(y_pred)
+    # print(y_pred)
     AUC_0, AUC_1, AUC_2, AUC_mean = multi_eval(label, y_pred_onehot, result_final_save_path, model_name=model_name)
-    return AUC_0, AUC_1, AUC_2, AUC_mean
+    return AUC_0, AUC_1, AUC_2, y_pred, y_pred_onehot
 
 def test_pytorch(nn_path, data, label, result_final_save_path, model_name):
     # model = TheModelClass(*args, **kwargs)
     # model.load_state_dict(torch.load(PATH))
     # model.eval()
     data_tc, lable_tc = torch.from_numpy(data).to(device), torch.from_numpy(label).to(device)
-    model = torch.load(nn_path)
+    model = torch.load(nn_path, map_location="cpu")  # TODO cpu
     model.eval()
     y_pred = model(data_tc)
-    print(y_pred)
-    y_pred_numpy = y_pred.cpu().detach()
+    # print(y_pred)
+    y_pred_numpy = y_pred.cpu().detach().numpy()
+    y_pred_numpy_out = y_pred_numpy.argmax(axis=1)
+
+    # print(y_pred_numpy.argmax(axis=1))
     AUC_0, AUC_1, AUC_2, AUC_mean = multi_eval(label, y_pred_numpy, result_final_save_path, model_name=model_name)
-    return AUC_0, AUC_1, AUC_2, AUC_mean
+    return AUC_0, AUC_1, AUC_2, y_pred_numpy_out, y_pred_numpy
 
 def match_front_in_list(name_list, front):
     new_name_list = []
@@ -68,7 +75,8 @@ def summary_and_test(data, label, all_model_path, result_final_save_path, local_
     name_list_CART = match_front_in_list(name_list, "CART")
     # name_list_RandomForest = match_front_in_list(name_list, "RandomForest")
     name_list_SVM = match_front_in_list(name_list, "SVM")
-    name_list_FCN = match_front_in_list(name_list, "FCN")
+    # name_list_FCN = match_front_in_list(name_list, "FCN")
+    name_list_FCN = match_front_in_list(name_list, "NeuralNetwork")
     name_list_MMoE = match_front_in_list(name_list, "MMoE")
     name_list_multi_layers_FCN = match_front_in_list(name_list, "multi_layers_FCN")
     print(name_list_CART)

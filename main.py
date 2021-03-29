@@ -12,7 +12,7 @@ from data_processing.iPAGE import calculate_delta_and_relative_expression
 
 from biomarker_select import biomarker_select
 from summary_and_train import summary_and_train
-from utils import load_list_of_tuple, save_list_of_tuple, list_with_index
+from utils import load_list_of_tuple, save_list_of_tuple, list_with_index, select_common_gene_expression_from_train_test
 
 import itertools
 if __name__ == "__main__":
@@ -21,9 +21,9 @@ if __name__ == "__main__":
     parser.add_argument("--SEED", type=int, default=int(time.time() * 100) % 399, help="")
     parser.add_argument("--classes_num", type=int, default=3, help="")
     parser.add_argument("--relative_sig", type=str, default="test_1")
-    parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020
+    parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020 GSE6269 all_exclude_21802_57065 only_21802_57065
     parser.add_argument("--dataset_random_state", type=int, default=1, help="")
-    parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random"
+    parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random", "random_and_external2_COVID19"
     parser.add_argument('--test_cohort_index', nargs='+', type=int, default=[1])
     parser.add_argument("--ipage_threshold", type=float, default=1e-16)
 
@@ -64,6 +64,8 @@ if __name__ == "__main__":
         os.makedirs(result_biomarker)
     # 2. split the train set/ test set
     # 2.1 cohort
+
+    # 内部验证比例，内部验证随机数，总数据集名称，外部验证数据集，
     if test_mode == "cohort":
         gene_GSE, label_GSE = load_data_raw(dataset=dataset)
 
@@ -101,6 +103,55 @@ if __name__ == "__main__":
         gene_GSE_concated = gene_GSE_concated.T
         print(dataset_random_state)
         gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+    elif test_mode == "random_and_external2_COVID19":
+        gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+        gene_GSE_COVID19, label_GSE_COVID19 = load_data_raw(dataset="COVID19")
+        gene_GSE_only_21802_57065, label_GSE_only_21802_57065 = load_data_raw(dataset="only_21802_57065")
+        gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1).T
+        gene_GSE_COVID19_concated = pd.concat(gene_GSE_COVID19, join="inner", axis=1).T
+        gene_GSE_only_21802_57065_concated = pd.concat(gene_GSE_only_21802_57065, join="inner", axis=1).T
+
+
+        gene_GSE_concated, gene_GSE_COVID19_concated = select_common_gene_expression_from_train_test(gene_GSE_concated, gene_GSE_COVID19_concated)
+        gene_GSE_concated, gene_GSE_only_21802_57065_concated = select_common_gene_expression_from_train_test(gene_GSE_concated, gene_GSE_only_21802_57065_concated)
+        label_GSE_concated = pd.concat(label_GSE, axis=0)
+        print(dataset_random_state)
+        gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
+            gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+        print(gene_GSE_concated.shape)
+    elif test_mode == "random_and_external2":
+        gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+        gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1).T
+
+        gene_GSE_only_2, label_GSE_only_2 = load_data_raw(dataset="only_21802_57065")  # 3
+        gene_GSE_only_2_concated = pd.concat(gene_GSE_only_2, join="inner", axis=1).T  # 2
+        gene_GSE_concated, gene_GSE_only_2_concated = select_common_gene_expression_from_train_test(gene_GSE_concated, gene_GSE_only_2_concated)  # 2
+
+        label_GSE_concated = pd.concat(label_GSE, axis=0)
+        gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
+            gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+    elif test_mode == "random_and_external_21802":
+        gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+        gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1).T
+
+        gene_GSE_only_21802, label_GSE_only_21802 = load_data_raw(dataset="only_21802")  # 3
+        gene_GSE_only_21802_concated = pd.concat(gene_GSE_only_21802, join="inner", axis=1).T  # 2
+        gene_GSE_concated, gene_GSE_only_21802_concated = select_common_gene_expression_from_train_test(gene_GSE_concated, gene_GSE_only_21802_concated)  # 2
+
+        label_GSE_concated = pd.concat(label_GSE, axis=0)
+        gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
+            gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+    elif test_mode == "random_and_external_57065":
+        gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+        gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1).T
+
+        gene_GSE_only_57065, label_GSE_only_57065 = load_data_raw(dataset="only_57065")  # 3
+        gene_GSE_only_57065_concated = pd.concat(gene_GSE_only_57065, join="inner", axis=1).T  # 2
+        gene_GSE_concated, gene_GSE_only_57065_concated = select_common_gene_expression_from_train_test(gene_GSE_concated, gene_GSE_only_57065_concated)  # 2
+
+        label_GSE_concated = pd.concat(label_GSE, axis=0)
+        gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
+            gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
     else:
         print("select unexist test mode")
         input()

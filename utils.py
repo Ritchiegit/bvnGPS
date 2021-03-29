@@ -1,5 +1,5 @@
 import pandas as pd
-
+import numpy as np
 # b = [("a", "b"), ("a", "c"), ("a", "d"), ("a", "e")]
 #
 # b_str = list(map(str, b))
@@ -38,6 +38,18 @@ def list_with_index(list_in_list, index_in_array):
     for index_in_array_each in index_in_array:
         new_list.append(list_in_list[index_in_array_each])
     return new_list
+
+
+def select_common_gene_expression_from_train_test(gene_GSE_concated_train, gene_GSE_concated_test):
+    gene_feature_idx_list = []
+    for gene in [gene_GSE_concated_train, gene_GSE_concated_test]:
+        gene_feature_idx_list.append(gene.columns)
+    from functools import reduce
+    common_gene_feature_idx = reduce(np.intersect1d, gene_feature_idx_list)
+    gene_GSE_concated_train_new = gene_GSE_concated_train[common_gene_feature_idx]
+    gene_GSE_concated_test_new = gene_GSE_concated_test[common_gene_feature_idx]
+    return gene_GSE_concated_train_new, gene_GSE_concated_test_new
+
 
 if __name__ == "__main__":
     c = [("a", "qe"), ("a", "c"), ("a", "d"), ("a", "e")]
