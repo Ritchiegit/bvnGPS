@@ -33,25 +33,46 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str,
                         default="coco_nc2020")  # coconut coco_nc2020 GSE6269 all_exclude_21802_57065 only_21802_57065
+    parser.add_argument('--dataset_list', nargs='+', type=str, default=[])
+
     parser.add_argument("--model_total_folder_name", type=str,
                         default="20210324_external2_1_model_iPAGE_all_exclude/")  # coconut coco_nc2020 GSE6269 all_exclude_21802_57065 only_21802_57065
     parser.add_argument("--pair_path", type=str,
                         default="results/20210325_external2_1_common_gene/20210325_external2_1_iPAGE_all_exclude_21802_57065_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso.csv")  # "cohort", "random"
-    parser.add_argument("--type_part_dataset", type=str,
-                        default=None)
+    parser.add_argument("--type_part_dataset", type=str, default=None)
+    parser.add_argument('--exclude_cohort_GSE', nargs='+', type=str, default=[])
+    parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random"
+    parser.add_argument("--dataset_random_state", type=int, default=1, help="")
 
     args = parser.parse_args()
     pair_path = args.pair_path
     dataset = args.dataset
     model_total_folder_name = args.model_total_folder_name
     type_part_dataset = args.type_part_dataset
+    exclude_cohort_GSE = args.exclude_cohort_GSE
+    test_mode = args.test_mode  # "cohort"  # "random"
+    dataset_list = args.dataset_list
+    if len(dataset_list) == 0:
+        pass
+    else:
+        dataset = dataset_list
+
+    pair_after_lasso = load_list_of_tuple(pair_path)
 
     # 处理数据
     dataset_random_state = 1
-    gene_GSE, label_GSE = load_data_raw(dataset=dataset)
-    label_GSE_concated = pd.concat(label_GSE, axis=0)
-    gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
-    gene_GSE_concated = gene_GSE_concated.T
+    # gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+    # label_GSE_concated = pd.concat(label_GSE, axis=0)
+    # gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
+    # gene_GSE_concated = gene_GSE_concated.T
+
+
+    if test_mode == "exclude_exter_val":
+        gene_GSE, label_GSE = load_data_raw(dataset=dataset, external_val_set=exclude_cohort_GSE)
+        gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1).T
+        label_GSE_concated = pd.concat(label_GSE, axis=0)
+    else:
+        exit(1)
     if type_part_dataset == "0.7":
         gene_GSE_concated, _, label_GSE_concated, _ = train_test_split(
             gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
@@ -65,7 +86,6 @@ if __name__ == "__main__":
     else:
         assert type_part_dataset is None
 
-    pair_after_lasso = load_list_of_tuple(pair_path)
     label = get_label_multilabel(label_GSE_concated=label_GSE_concated)
     data = calculate_delta_and_relative_expression(pair_after_lasso, gene_GSE_concated)
 
@@ -105,6 +125,8 @@ if __name__ == "__main__":
             elif check_front_of_name(model_name, "SVM"):
                 AUC_0, AUC_1, AUC_2, y_pred, y_pred_3 = val_with_one_dataset(data, label, model_path, "sklearn", model_name, result_final_save_file)
             elif check_front_of_name(model_name, "NeuralNetwork"):
+                AUC_0, AUC_1, AUC_2, y_pred, y_pred_3 = val_with_one_dataset(data, label, model_path, "neural network", model_name, result_final_save_file)
+            elif check_front_of_name(model_name, "MFCN"):
                 AUC_0, AUC_1, AUC_2, y_pred, y_pred_3 = val_with_one_dataset(data, label, model_path, "neural network", model_name, result_final_save_file)
             elif check_front_of_name(model_name, "lda"):
                 model_path = (model_folder_name+"lda.model_pickle", model_folder_name+"RandomForest.model_pickle")

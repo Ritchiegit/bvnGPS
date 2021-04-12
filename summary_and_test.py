@@ -10,7 +10,7 @@ import torch
 import numpy as np
 import os
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")  # TODO cpu
+# device = torch.device("cpu")  # TODO cpu
 
 
 num_classes = 3
@@ -42,7 +42,7 @@ def test_pytorch(nn_path, data, label, result_final_save_path, model_name):
     # model.load_state_dict(torch.load(PATH))
     # model.eval()
     data_tc, lable_tc = torch.from_numpy(data).to(device), torch.from_numpy(label).to(device)
-    model = torch.load(nn_path, map_location="cpu")  # TODO cpu
+    model = torch.load(nn_path)  # TODO cpu
     model.eval()
     y_pred = model(data_tc)
     # print(y_pred)

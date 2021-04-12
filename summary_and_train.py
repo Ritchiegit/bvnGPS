@@ -133,23 +133,9 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     model_name = f"MFCN_MSE_opt{optimizer_str}_h{hidden_feature_list}_lr{learning_rate}"
     print(model_name)
     multi_eval(y_test, y_pred, result_full_filepath, model_name, end_epoch)
+    """
 
-    learning_rate = 0.001
-    optimizer_str_list = ["Adam", "Adagrad"]
-    layer_1_num_list = [2, 8, 32, 128, 512]
-    layer_2_num_list = [2, 8, 32, 128, 512]
-    for optimizer_str in optimizer_str_list:
-        for layer_1_num in layer_1_num_list:
-            for layer_2_num in layer_2_num_list:
-                hidden_feature_list = [layer_1_num, layer_2_num]
-                model_name = f"MFCN_MSE_opt{optimizer_str}_h{layer_1_num}_h{layer_2_num}_lr{learning_rate}"
-                print(model_name)  # TODO 没有将这个model name 传进去
-                y_pred, end_epoch = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 5000, sklearn_random=sklearn_random,
-                                                         criterion_type="MSE", learning_rate=learning_rate, optimizer_str=optimizer_str,
-                                                         model_str="multi_layers_FCN", hidden_feature_list=hidden_feature_list, model_save_folder_path=model_save_folder_path, model_name_for_save=model_name)
-                multi_eval(y_test, y_pred, result_full_filepath, model_name, end_epoch)
-
-
+    """
     # MMoE
     optimizer_str_list = ["Adam", "Adagrad"]
     learning_rate = 0.001
@@ -165,7 +151,7 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
                     config = Config(num_experts=num_experts, expert_unit=expert_unit, hidden_units=hidden_units)
                     model_name = f"MMoE_MSE_opt{optimizer_str}_h{hidden_feature}_lr{learning_rate}_nexp{num_experts}_uexp{expert_unit}_utower{hidden_units}"
                     print(model_name)
-                    y_pred, end_epoch = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 5000,
+                    y_pred, end_epoch = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 2000,
                                                   sklearn_random=sklearn_random, criterion_type="MSE",
                                                   hidden_feature=hidden_feature, learning_rate=learning_rate,
                                                   optimizer_str=optimizer_str, model_str="MMoE", config=config, model_save_folder_path=model_save_folder_path, model_name_for_save=model_name)
@@ -208,7 +194,7 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
             for learning_rate in learning_rates:
                 model_name = f"NeuralNetworkMSE_opt{optimizer_str}_h{hidden_feature}_lr{learning_rate}"
                 print(model_name)
-                y_pred, end_epoch = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 5000, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate, optimizer_str=optimizer_str,
+                y_pred, end_epoch = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 2000, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate, optimizer_str=optimizer_str,
                                                          model_save_folder_path=model_save_folder_path, model_name_for_save=model_name)
                 multi_eval(y_test, y_pred, result_full_filepath, model_name, end_epoch)
     # optimizer_str = "Adagrad"
@@ -229,6 +215,25 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     # gbm.fit(X_train, y_train)
     # y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration_)
     # multi_eval(y_test, y_pred, result_full_filepath, model_name)
+
+    # learning_rate = 0.001
+    learning_rates = [0.01, 0.001, 0.0005]
+    optimizer_str_list = ["Adam", "Adagrad"]
+    layer_1_num_list = [2, 4, 8, 32, 128, 256, 512, 768, 1024]
+    layer_2_num_list = [2, 4, 8, 32, 128, 256, 512, 768, 1024]
+    for optimizer_str in optimizer_str_list:
+        for layer_1_num in layer_1_num_list:
+            for layer_2_num in layer_2_num_list:
+                for learning_rate in learning_rates:
+
+                    hidden_feature_list = [layer_1_num, layer_2_num]
+                    model_name = f"MFCN_MSE_opt{optimizer_str}_h{layer_1_num}_h{layer_2_num}_lr{learning_rate}"
+                    print(model_name)
+                    y_pred, end_epoch = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 2000, sklearn_random=sklearn_random,
+                                                             criterion_type="MSE", learning_rate=learning_rate, optimizer_str=optimizer_str,
+                                                             model_str="multi_layers_FCN", hidden_feature_list=hidden_feature_list, model_save_folder_path=model_save_folder_path, model_name_for_save=model_name)
+                    multi_eval(y_test, y_pred, result_full_filepath, model_name, end_epoch)
+
 
     f = open(result_full_filepath, "a+")
     f.write("\n")
