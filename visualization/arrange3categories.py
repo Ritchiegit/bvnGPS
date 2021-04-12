@@ -5,11 +5,11 @@ pred_path = "../label_for_validation/pred_only_21802_57065.csv"
 label_path = "../label_for_validation/label_only_21802_57065.csv"
 
 #
-pred_path = "../label_for_validation/pred_all_exclude_21802_570650.3.csv"
-label_path = "../label_for_validation/label_all_exclude_21802_570650.3.csv"
+# pred_path = "../label_for_validation/pred_all_exclude_21802_570650.3.csv"
+# label_path = "../label_for_validation/label_all_exclude_21802_570650.3.csv"
 
-pred_path = "../label_for_validation/pred_all_exclude_21802_570650.7.csv"
-label_path = "../label_for_validation/label_all_exclude_21802_570650.7.csv"
+# pred_path = "../label_for_validation/pred_all_exclude_21802_570650.7.csv"
+# label_path = "../label_for_validation/label_all_exclude_21802_570650.7.csv"
 
 
 
@@ -45,28 +45,30 @@ print(pred_3_0.shape)
 print(pred_3_1.shape)
 print(pred_3_2.shape)
 
-pred_concated = np.concatenate((pred_3_0, pred_3_1, pred_3_2), axis=0)
+pred_concated = np.concatenate((pred_3_1, pred_3_2, pred_3_0), axis=0)
 print(pred_concated.shape)
 
 from matplotlib import pyplot as plt
+plt.figure(figsize=(13, 4), dpi=300)
+
 # plt.scatter(np.arange(pred_concated.shape[0]), pred_concated[:, 0], marker="o", c='',edgecolors='k')
 # plt.scatter(np.arange(pred_concated.shape[0]), pred_concated[:, 1], marker="^", c='',edgecolors='DarkBlue')
 # plt.scatter(np.arange(pred_concated.shape[0]), pred_concated[:, 2], marker="s", c='',edgecolors='SlateGray')
-plt.scatter(np.arange(pred_concated.shape[0]), pred_concated[:, 0], marker="o", c='',edgecolors='gold', label='Uninfected Prob')
-plt.scatter(np.arange(pred_concated.shape[0]), pred_concated[:, 1], marker="^", c='',edgecolors='chocolate', label='Bacteria Prob')
-plt.scatter(np.arange(pred_concated.shape[0]), pred_concated[:, 2], marker="s", c='',edgecolors='steelblue', label='Virus Prob')
-plt.vlines(len_0, 0, 1, color="k", linestyles="--")
-plt.vlines(len_0+len_1, 0, 1, color="k", linestyles="--")
-plt.xticks([len_0/2,len_0+len_1/2,len_0+len_1+len_2/2],['Uninfected', 'Bacteria', 'Virus'])
+plt.scatter(np.arange(pred_concated.shape[0]), pred_concated[:, 1], marker="^", c='',edgecolors='chocolate', label='Bacterial')
+plt.scatter(np.arange(pred_concated.shape[0]), pred_concated[:, 2], marker="s", c='',edgecolors='steelblue', label='Viral')
+plt.scatter(np.arange(pred_concated.shape[0]), pred_concated[:, 0], marker="o", c='',edgecolors='gold', label='Noninfected')
+plt.vlines(len_1, 0, 1, color="k", linestyles="--")
+plt.vlines(len_1+len_2, 0, 1, color="k", linestyles="--")
+plt.xticks([len_1/2,len_1+len_2/2, len_1 + len_2 + len_0/2],['Bacterial', 'Viral', 'Noninfected'])
 plt.xlim((0, len_0+len_1+len_2))
 plt.ylim((0, 1))
-plt.xlabel('Clinically phenotype')
+# plt.xlabel('Clinically phenotype')
 plt.ylabel('Probability')  # 可以使用中文，但需要导入一些库即字体
 plt.grid()
-plt.legend(loc="lower right")
+plt.legend(loc="right")
 # box = ax1.get_position()
 # ax1.set_position([box.x0, box.y0, box.width , box.height* 0.8])
 plt.tight_layout()
 plt.savefig(f'{pred_path[:-4]}_probability_of_3class.png')
 
-plt.show()
+# plt.show()

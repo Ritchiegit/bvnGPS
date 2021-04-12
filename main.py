@@ -21,11 +21,12 @@ if __name__ == "__main__":
     parser.add_argument("--SEED", type=int, default=int(time.time() * 100) % 399, help="")
     parser.add_argument("--classes_num", type=int, default=3, help="")
     parser.add_argument("--relative_sig", type=str, default="test_1")
-    parser.add_argument("--dataset", type=str, default="coco_nc2020")  # coconut coco_nc2020 GSE6269 all_exclude_21802_57065 only_21802_57065
+    parser.add_argument("--dataset", type=str, default="coco_nc2020_host")  # coconut coco_nc2020 GSE6269 all_exclude_21802_57065 only_21802_57065
     parser.add_argument("--dataset_random_state", type=int, default=1, help="")
-    parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random", "random_and_external2_COVID19"
+    parser.add_argument("--test_mode", type=str, default="cohort")  # "cohort", "random", "random_and_external2_COVID19", "ran07_val_and_exter_val"
     parser.add_argument('--test_cohort_index', nargs='+', type=int, default=[1])
     parser.add_argument("--ipage_threshold", type=float, default=1e-16)
+    parser.add_argument('--test_cohort_GSE', nargs='+', type=str, default=[21802, 57065])
 
     args = parser.parse_args()
     SEED = args.SEED
@@ -38,6 +39,7 @@ if __name__ == "__main__":
     test_cohort_index = args.test_cohort_index
     print(test_cohort_index)
     ipage_threshold = args.ipage_threshold
+    test_cohort_GSE = args.test_cohort_GSE
     def setup_seed(seed):
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
@@ -47,6 +49,8 @@ if __name__ == "__main__":
     setup_seed(SEED)
     if test_mode == "cohort":
         cohort_str = f"_cohort{test_cohort_index}"
+    elif test_mode == "ran07_val_and_exter_val":
+        cohort_str = f"_ran07_exter_val{test_cohort_GSE}"
     else:
         cohort_str = ""
     folder_name = f"{relative_sig}_iPAGE_{dataset}_seed{SEED}" \
@@ -130,6 +134,26 @@ if __name__ == "__main__":
         label_GSE_concated = pd.concat(label_GSE, axis=0)
         gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
             gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+        print("label_GSE_concated_train.shape", label_GSE_concated_train.shape)
+        print("label_GSE_concated_test.shape", label_GSE_concated_test.shape)
+        def sumall(label, zhi):
+            return sum(label == zhi)
+        label = get_label_multilabel(label_GSE_concated)
+        a = sumall(label, 0)
+        b = sumall(label, 1)
+        c = sumall(label, 2)
+        print("label 0, 1, 2", a, b, c)
+        label = get_label_multilabel(label_GSE_concated_train)
+        a = sumall(label, 0)
+        b = sumall(label, 1)
+        c = sumall(label, 2)
+        print("train label 0, 1, 2", a, b, c)
+        label = get_label_multilabel(label_GSE_concated_test)
+        a = sumall(label, 0)
+        b = sumall(label, 1)
+        c = sumall(label, 2)
+        print("test label 0, 1, 2", a, b, c)
+        # input()
     elif test_mode == "random_and_external_21802":
         gene_GSE, label_GSE = load_data_raw(dataset=dataset)
         gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1).T
@@ -152,6 +176,20 @@ if __name__ == "__main__":
         label_GSE_concated = pd.concat(label_GSE, axis=0)
         gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
             gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+    elif test_mode == "ran07_val_and_exter_val":
+        gene_GSE, label_GSE = load_data_raw(dataset=dataset, external_val_set=test_cohort_GSE)
+        gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1).T
+
+        gene_GSE_for_external_validation, _ = load_data_raw(dataset=test_cohort_GSE)  # 3
+        gene_GSE_for_external_validation_concated = pd.concat(gene_GSE_for_external_validation, join="inner", axis=1).T  # 2
+        gene_GSE_concated, gene_GSE_for_external_validation_concated = select_common_gene_expression_from_train_test(
+            gene_GSE_concated, gene_GSE_for_external_validation_concated)  # 2
+
+        label_GSE_concated = pd.concat(label_GSE, axis=0)
+        gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
+            gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+        print("in ran07 exter val")
+        # input()
     else:
         print("select unexist test mode")
         input()

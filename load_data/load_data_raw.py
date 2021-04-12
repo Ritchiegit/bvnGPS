@@ -2,6 +2,12 @@ import numpy as np
 import pandas as pd
 import glob as glob
 
+def list_1_minus_list_2(list1, list2):
+    new_list = []
+    for elem in list1:
+        if elem not in list2:
+            new_list.append(elem)
+    return new_list
 
 def filter_label(gene_one_GSE, label, filter_num=3):
     label_still_index = np.nonzero(label["label"].values != filter_num)[0]
@@ -12,7 +18,7 @@ def filter_label(gene_one_GSE, label, filter_num=3):
     return gene_one_GSE_still, label_still
 
 
-def load_data_raw(dataset="coconut", filter_nums=None):
+def load_data_raw(dataset="coconut", external_val_set=[], filter_nums=None):
     """
     :param dataset: coconut coco_nc2020 test
     :param filter_nums:
@@ -20,7 +26,11 @@ def load_data_raw(dataset="coconut", filter_nums=None):
     """
     if filter_nums is None:
         filter_nums = [3, 10]
-    if dataset == "coconut":
+    if isinstance(dataset, list) or isinstance(dataset, tuple):
+        GSE_IDs = list(map(str, dataset))
+        print(GSE_IDs)
+        data_paths = ["data/coconut_20210127/", "data/nc2020/", "data/host2016_20210322/"]
+    elif dataset == "coconut":
         GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "66099", "63990"]  # 顺序需要注意
         data_paths = ["data/coconut_20210127/"]
     elif dataset == "coco_nc2020":
@@ -36,6 +46,12 @@ def load_data_raw(dataset="coconut", filter_nums=None):
         data_paths = ["data/host2016_20210322/"]
     elif dataset == "all_exclude_21802_57065":
         GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990", "66099",  # 顺序需要注意
+                            "27131", "28750", "42834",          "68310", "69528", "111368",
+                   "6269_2", "6269_3"]
+                   # "6269_1", "6269_2", "6269_3"]  # 如果使用 GPL2507 处理出来的数据集 共有基因个数只有4794个 可能很影响性能。
+        data_paths = ["data/coconut_20210127/", "data/nc2020/", "data/host2016_20210322/"]
+    elif dataset == "all_exclude2_raw63990":
+        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990_raw_label", "66099",  # 顺序需要注意
                             "27131", "28750", "42834",          "68310", "69528", "111368",
                    "6269_2", "6269_3"]
                    # "6269_1", "6269_2", "6269_3"]  # 如果使用 GPL2507 处理出来的数据集 共有基因个数只有4794个 可能很影响性能。
@@ -78,6 +94,10 @@ def load_data_raw(dataset="coconut", filter_nums=None):
         print("请检查数据集字符串格式")
         input()
         return
+    external_val_set = list(map(str, external_val_set))
+    GSE_IDs = list_1_minus_list_2(GSE_IDs, external_val_set)
+    print("external_val_set", external_val_set)
+    print("GSE_IDs", GSE_IDs)
     gene_GSE = []
     label_GSE = []
     sample_sum = 0
@@ -88,7 +108,7 @@ def load_data_raw(dataset="coconut", filter_nums=None):
             mRNA_glob = glob.glob(data_path + f"exp_gene_GSE{GSE_ID}.txt")
             print(mRNA_glob)
             if len(mRNA_glob) != 0:
-                break
+                break  # 存在时就推出
         keys = []
         if len(mRNA_glob) != 0:
             mRNA = pd.read_csv(mRNA_glob[0], sep="\t")
@@ -105,7 +125,13 @@ def load_data_raw(dataset="coconut", filter_nums=None):
         label = pd.read_csv(label_glob[0], sep='\t', names=["id", "details", "label"])
         label = label.drop(index=[0])
         for filter_num in filter_nums:
+            len_label_old = label.shape[0]
             gene_one_GSE, label = filter_label(gene_one_GSE, label, filter_num)
+            len_label_new = label.shape[0]
+            if filter_num == 3 and len_label_new != len_label_old:
+                print("GSE_before_and_after_filter_3:", GSE_ID, "old:", len_label_old, "new:", len_label_new)
+                # input()
+
         sample_sum += gene_one_GSE.shape[1]
         gene_GSE.append(gene_one_GSE)  # pd
         label_GSE.append(label)  # pd
@@ -120,7 +146,9 @@ if __name__ == "__main__":
     import os
     os.chdir("..")
     # gene_GSE, label_GSE = load_data_raw(dataset="only_21802_57065")
-    gene_GSE, label_GSE = load_data_raw(dataset="all_exclude_21802_57065")
+    # gene_GSE, label_GSE = load_data_raw(dataset="all_exclude_21802_57065")
+    gene_GSE, label_GSE = load_data_raw(dataset="all_exclude2_raw63990")
+    # gene_GSE, label_GSE = load_data_raw(dataset=(21802, 57065))
     # gene_GSE, label_GSE = load_data_raw(dataset="COVID19")
     # gene_GSE, label_GSE = load_data_raw(dataset="GSE6269")
     label_GSE_concated = pd.concat(label_GSE, axis=0)
@@ -140,3 +168,9 @@ if __name__ == "__main__":
     b = sumall(label, 1)
     c = sumall(label, 2)
     print(a, b, c)
+
+    gene_GSE_one = gene_GSE[5]
+    label_GSE_one = label_GSE[5]
+    print(gene_GSE_one.shape)
+    print(label_GSE_one.shape)
+    print(label_GSE_one)

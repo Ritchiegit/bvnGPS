@@ -1,8 +1,8 @@
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")  # TODO cpu
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")  # TODO cpu
 
 class FCN(nn.Module):
     def __init__(self, input_feature=22583, hidden_feature=256, output_feature=2):
