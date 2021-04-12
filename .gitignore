@@ -18,3 +18,5 @@ analysis/
 *.zip
 *.png
 *.txt
+old/
+*.xlsx
