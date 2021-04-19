@@ -69,11 +69,7 @@ def biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_
     label_train = get_label_func(label_GSE_concated=label_GSE_concated_train)
     label_test = get_label_func(label_GSE_concated=label_GSE_concated_test)
     # data
-    if os.path.exists(prepared_data_path):
-        data_train, pair_index_exact_expressed_list_final = pickle.load(open(prepared_data_path, "rb"))
-    else:
-        data_train, pair_index_exact_expressed_list_final = get_data_with_ipage(gene_GSE_concated_train, label_train, threshold=threshold)
-        pickle.dump((data_train, pair_index_exact_expressed_list_final), open(prepared_data_path, "wb"))
+    data_train, pair_index_exact_expressed_list_final = get_data_with_ipage(gene_GSE_concated_train, label_train, threshold=threshold)
     data_test = calculate_delta_and_relative_expression(pair_index_exact_expressed_list_final, gene_GSE_concated_test)
 
     # LASSO select
