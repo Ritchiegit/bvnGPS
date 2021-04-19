@@ -11,8 +11,6 @@ import numpy as np
 import os
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu")  # TODO cpu
-
-
 num_classes = 3
 
 
@@ -38,9 +36,6 @@ def test_sklearn(clf_path, data, label, result_final_save_path, model_name):  # 
     return AUC_0, AUC_1, AUC_2, y_pred, y_pred_onehot
 
 def test_pytorch(nn_path, data, label, result_final_save_path, model_name):
-    # model = TheModelClass(*args, **kwargs)
-    # model.load_state_dict(torch.load(PATH))
-    # model.eval()
     data_tc, lable_tc = torch.from_numpy(data).to(device), torch.from_numpy(label).to(device)
     model = torch.load(nn_path)  # TODO cpu
     model.eval()
