@@ -1,8 +1,12 @@
 import pandas as pd
 import numpy as np
-
-pred_path = "../label_for_validation/pred_only_21802_57065.csv"
-label_path = "../label_for_validation/label_only_21802_57065.csv"
+from load_data.load_data_raw import load_data_raw
+from sklearn.model_selection import train_test_split
+from data_processing.process_data_label import get_label_multilabel
+import os
+os.chdir("..")
+# pred_path = "../label_for_validation/pred_only_21802_57065.csv"
+# label_path = "../label_for_validation/label_only_21802_57065.csv"
 
 #
 # pred_path = "../label_for_validation/pred_all_exclude_21802_570650.3.csv"
@@ -12,14 +16,44 @@ label_path = "../label_for_validation/label_only_21802_57065.csv"
 # label_path = "../label_for_validation/label_all_exclude_21802_570650.7.csv"
 
 
+pred_path = "results/final_model_results/20210416_2/pred_result/output_selected/only_21802_57065None/threeNeuralNetworkMSE_optAdagrad_h768_lr0.01_val0.06611447938731019_epoch16.pth.csv"
+dataset = "only_21802_57065"
+type_part_dataset = None
+
+pred_path = "results/final_model_results/20210416_2/pred_result/output_selected/all_exclude2_6269_1_raw639900.3/threeNeuralNetworkMSE_optAdagrad_h768_lr0.01_val0.06611447938731019_epoch16.pth.csv"
+dataset = "all_exclude2_6269_1_raw63990"
+type_part_dataset = "0.3"
+
+pred_path = "results/final_model_results/20210416_2/pred_result/output_selected/all_exclude2_6269_1_raw639900.7/threeNeuralNetworkMSE_optAdagrad_h768_lr0.01_val0.06611447938731019_epoch16.pth.csv"
+dataset = "all_exclude2_6269_1_raw63990"
+type_part_dataset = "0.7"
+# path_model = "results/final_model_results/20210416_2/pred_result/output_selected/all_exclude2_6269_1_raw639900.3/threeNeuralNetworkMSE_optAdagrad_h768_lr0.01_val0.06611447938731019_epoch16.pth.csv"
+# dataset = "all_exclude2_6269_1_raw63990"
+# type_part_dataset = "0.7"
+dataset_random_state = 1
+gene_GSE, label_GSE = load_data_raw(dataset=dataset)
+label_GSE_concated = pd.concat(label_GSE, axis=0)
+gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
+gene_GSE_concated = gene_GSE_concated.T
+if type_part_dataset == "0.7":
+    gene_GSE_concated, _, label_GSE_concated, _ = train_test_split(
+        gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+elif type_part_dataset == "0.3":
+    _, gene_GSE_concated, _, label_GSE_concated = train_test_split(
+        gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+else:
+    assert type_part_dataset is None
+
+label = get_label_multilabel(label_GSE_concated=label_GSE_concated)
+# pred_path_list = glob.glob(path_model + "*")
 
 pred_3 = pd.read_csv(pred_path, header=None)
 pred_3 = pred_3.values
-label = pd.read_csv(label_path, header=None)
-label = label.values
-label = label.flatten()
-print(label)
-print(pred_3)
+# label = pd.read_csv(label_path, header=None)
+# label = label.values
+# label = label.flatten()
+# print(label)
+# print(pred_3)
 
 
 # label = label.values.flatten()
@@ -69,6 +103,7 @@ plt.legend(loc="right")
 # box = ax1.get_position()
 # ax1.set_position([box.x0, box.y0, box.width , box.height* 0.8])
 plt.tight_layout()
+
 plt.savefig(f'{pred_path[:-4]}_probability_of_3class.png')
 
 # plt.show()

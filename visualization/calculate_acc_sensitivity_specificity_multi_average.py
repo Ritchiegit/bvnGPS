@@ -2,31 +2,32 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import pandas as pd
 import os
-from load_data.load_data_raw import load_data_raw
-from data_processing.process_data_label import get_label_multilabel
 from sklearn.model_selection import train_test_split
 import matplotlib
 import glob
 from scipy import stats
 import numpy as np
-from utils import check_front_of_name
 # matplotlib.rcParams['pdf.fonttype'] = 42
 # matplotlib.rcParams['ps.fonttype'] = 42
 os.chdir("..")
+from data_processing.process_data_label import get_label_multilabel
+from load_data.load_data_raw import load_data_raw
 
-dataset = "all_exclude_21802_57065"
+front_str = "20210416_2"
+
+dataset = "all_exclude2_6269_1_raw63990"
 type_part_dataset = "0.3"
-dataset = "all_exclude_21802_57065"
+dataset = "all_exclude2_6269_1_raw63990"
 type_part_dataset = "0.7"
-dataset = "only_21802_57065"
-type_part_dataset = None
+# dataset = "only_21802_57065"
+# type_part_dataset = None
 
 threshold = 0.3
-
 file_to_save_name = f"{dataset}{type_part_dataset}_{threshold}.csv"
 
-pre_result_total_path = "results/final_model_results/20210326_for_all_sensitivity/pred_result/"
+# pre_result_total_path = "results/final_model_results/20210326_for_all_sensitivity/pred_result/"
 # pre_result_total_path = "results/final_model_results/20210408_1_e2_raw63990_iPAGE/pred_result/"
+pre_result_total_path = "results/final_model_results/20210416_2/pred_result/"
 random_seed_filename_list = os.listdir(pre_result_total_path)
 print(random_seed_filename_list)
 path_acc_sensitivity_specificity = f'{pre_result_total_path}/acc_s_s/'
@@ -54,7 +55,7 @@ label = get_label_multilabel(label_GSE_concated=label_GSE_concated)
 df_list = []
 
 for random_seed_filename in random_seed_filename_list:
-    if random_seed_filename[:8] != "20210326":
+    if random_seed_filename[:len(front_str)] != front_str:
     # if random_seed_filename[:8] != "20210408":
         continue
     path_model = f"{pre_result_total_path}/{random_seed_filename}/{dataset}{type_part_dataset}/"
@@ -121,7 +122,7 @@ for random_seed_filename in random_seed_filename_list:
     df = pd.DataFrame(final_print)
     df.set_index([0], inplace=True)
     df_list.append(df)
-
+print(len(df_list))
 final_result_nptensor = np.dstack(df_list)
 print("final_result_nptensor.shape", final_result_nptensor.shape)
 # df.to_csv(path_acc_sensitivity_specificity+file_to_save_name)

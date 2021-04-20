@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import pandas as pd
 import os
+os.chdir("..")
+
 from load_data.load_data_raw import load_data_raw
 from data_processing.process_data_label import get_label_multilabel
 from sklearn.model_selection import train_test_split
@@ -9,17 +11,18 @@ import matplotlib
 import glob
 # matplotlib.rcParams['pdf.fonttype'] = 42
 # matplotlib.rcParams['ps.fonttype'] = 42
-os.chdir("..")
 
-path_model = "results/final_model_results/20210326_external2_1_model_selected_0328/pred_result/2/only_21802_57065None/"
+path_model = "results/final_model_results/20210416_2/pred_result/20210416_2_iPAGE_all_exclude2_6269_1_raw63990_seed103_dataRS1_ran07_exter_val[21802, 57065]_model/only_21802_57065None/"
 dataset = "only_21802_57065"
 type_part_dataset = None
-path_model = "results/final_model_results/20210326_external2_1_model_selected_0328/pred_result/2/all_exclude_21802_570650.3/"
-dataset = "all_exclude_21802_57065"
-type_part_dataset = "0.3"
-path_model = "results/final_model_results/20210326_external2_1_model_selected_0328/pred_result/2/all_exclude_21802_570650.7/"
-dataset = "all_exclude_21802_57065"
-type_part_dataset = "0.7"
+# path_model = "results/final_model_results/20210416_2/pred_result/20210416_2_iPAGE_all_exclude2_6269_1_raw63990_seed103_dataRS1_ran07_exter_val[21802, 57065]_model/all_exclude2_6269_1_raw639900.3/"
+# dataset = "all_exclude2_6269_1_raw63990"
+# type_part_dataset = "0.3"
+# path_model = "results/final_model_results/20210416_2/pred_result/20210416_2_iPAGE_all_exclude2_6269_1_raw63990_seed103_dataRS1_ran07_exter_val[21802, 57065]_model/all_exclude2_6269_1_raw639900.7/"
+# dataset = "all_exclude2_6269_1_raw63990"
+# type_part_dataset = "0.7"
+pred_file_list = os.listdir(path_model)
+print("pred_file_list", len(pred_file_list))
 
 
 
@@ -49,7 +52,6 @@ else:
 
 label = get_label_multilabel(label_GSE_concated=label_GSE_concated)
 # pred_path_list = glob.glob(path_model + "*")
-pred_file_list = os.listdir(path_model)
 for pred_file in pred_file_list:
     pred_path = path_model + "/" + pred_file
     if os.path.isdir(pred_path):
