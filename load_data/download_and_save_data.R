@@ -83,16 +83,16 @@ description_to_label <- function(des){
     else if (substring(des_each, 1, 20) == "Severe Influenza_day") {key=2}
     else if (substring(des_each, 1, 3) == "Vac") {key=0} 
     
-    
-    else if (substring(des_each, 1, 20) == "pathogen: Adenovirus") {key=1}
-    else if (substring(des_each, 1, 14) == "pathogen: HHV6") {key=1}
-    else if (substring(des_each, 1, 21) == "pathogen: Enterovirus") {key=1}
-    else if (substring(des_each, 1, 20) == "pathogen: Rhinovirus") {key=1}
-    else if (substring(des_each, 1, 16) == "pathogen: E.coli") {key=2}
-    else if (substring(des_each, 1, 18) == "pathogen: Bacteria") {key=2}
-    else if (substring(des_each, 1, 14) == "pathogen: MRSA") {key=2}
-    else if (substring(des_each, 1, 20) == "pathogen: Salmonella") {key=2}
-    else if (substring(des_each, 1, 14) == "pathogen: MSSA") {key=2}
+    # 这里要小心
+    else if (substring(des_each, 1, 20) == "pathogen: Adenovirus") {key=2}
+    else if (substring(des_each, 1, 14) == "pathogen: HHV6") {key=2}
+    else if (substring(des_each, 1, 21) == "pathogen: Enterovirus") {key=2}
+    else if (substring(des_each, 1, 20) == "pathogen: Rhinovirus") {key=2}
+    else if (substring(des_each, 1, 16) == "pathogen: E.coli") {key=1}
+    else if (substring(des_each, 1, 18) == "pathogen: Bacteria") {key=1}
+    else if (substring(des_each, 1, 14) == "pathogen: MRSA") {key=1}
+    else if (substring(des_each, 1, 20) == "pathogen: Salmonella") {key=1}
+    else if (substring(des_each, 1, 14) == "pathogen: MSSA") {key=1}
     else if (substring(des_each, 1, 14) == "pathogen: None") {key=0}
     
     else if (substring(des_each, 1, 7) == "WB-bact") {key=1}
