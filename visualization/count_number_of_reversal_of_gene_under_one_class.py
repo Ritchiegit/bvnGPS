@@ -8,7 +8,7 @@ import math
 import seaborn as sns
 os.chdir("..")
 # pair_path = "results/20210326_external2_1_common_gene/20210326_external2_1_iPAGE_all_exclude_21802_57065_seed1_dataRS1_threshold1e-16/biomarker/pair_after_lasso.csv"
-label_select = 2
+label_select = 0
 # biomaker_path = "results/20210326_external2_1_common_gene/20210326_external2_1_iPAGE_all_exclude_21802_57065_seed1_dataRS1_threshold1e-16/biomarker/"
 # dataset = "all_exclude_21802_57065"
 
@@ -149,5 +149,5 @@ local_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
 fig.tight_layout(rect=[0, 0, .9, 1])
 
 
-plt.savefig(f'{biomarker_path}/pair_count/{dataset}_label{label_select}.png', transparent=True, dpi=800)
+plt.savefig(f'{biomarker_path}/pair_count/{dataset}_label{label_select}.png', transparent=True, dpi=300)
 plt.show()
