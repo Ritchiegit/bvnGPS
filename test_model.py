@@ -15,7 +15,6 @@ num_classes = 3
 
 
 def test_lda_RF(lda_path, RF_path, data, label, result_final_save_path, model_name):  # ldaRF
-    print(model_name)
     lda = pickle.load(open(lda_path, "rb"))
     clf_RF = pickle.load(open(RF_path, "rb"))
     X_test_after_LDA = lda.transform(data)
@@ -29,9 +28,7 @@ def test_lda_RF(lda_path, RF_path, data, label, result_final_save_path, model_na
 def test_sklearn(clf_path, data, label, result_final_save_path, model_name):  # CART SVM
     clf = pickle.load(open(clf_path, "rb"))
     y_pred = clf.predict(data)
-    # print(y_pred)
     y_pred_onehot = np.eye(num_classes)[y_pred]
-    # print(y_pred)
     AUC_0, AUC_1, AUC_2, AUC_mean = multi_eval(label, y_pred_onehot, result_final_save_path, model_name=model_name)
     return AUC_0, AUC_1, AUC_2, y_pred, y_pred_onehot
 
@@ -40,11 +37,9 @@ def test_pytorch(nn_path, data, label, result_final_save_path, model_name):
     model = torch.load(nn_path)  # TODO cpu
     model.eval()
     y_pred = model(data_tc)
-    # print(y_pred)
     y_pred_numpy = y_pred.cpu().detach().numpy()
     y_pred_numpy_out = y_pred_numpy.argmax(axis=1)
 
-    # print(y_pred_numpy.argmax(axis=1))
     AUC_0, AUC_1, AUC_2, AUC_mean = multi_eval(label, y_pred_numpy, result_final_save_path, model_name=model_name)
     return AUC_0, AUC_1, AUC_2, y_pred_numpy_out, y_pred_numpy
 
