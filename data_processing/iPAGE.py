@@ -52,8 +52,6 @@ def get_delta_with_fisher_exact_test(gene_GSE_adjusted_concated, label, threshol
     :return:
     """
     gene_in_pathways = load_pathway()
-    # gene_GSE_adjusted_concated = pd.concat(gene_GSE, join="inner", axis=1)
-    # gene_GSE_adjusted_concated = gene_GSE_adjusted_concated.T
     col_RNA = gene_GSE_adjusted_concated.columns
 
     RNA_in_dataset = list(zip(*col_RNA))[1]
@@ -75,8 +73,6 @@ def get_delta_with_fisher_exact_test(gene_GSE_adjusted_concated, label, threshol
         gene_GSE_in_pathways.append(gene_GSE_in_pathway)
     # 计算每个pathway中pair的结果。
     pair_index_exact_expressed_list = []
-    print("threshold of ipage", threshold)
-    print("in fisher exact test of all pathway")
     print("calculate fisher exact in pathway")
     sum_max_num = 0
     for gene_GSE_in_pathway in tqdm(gene_GSE_in_pathways):
