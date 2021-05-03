@@ -17,8 +17,11 @@ def filter_label(gene_one_GSE, label, filter_num=3):
     gene_one_GSE_still = gene_one_GSE.iloc[:, label_still_index]
     return gene_one_GSE_still, label_still
 
+def label_replace(label, from_num, to_num):
+    label["label"].loc[label["label"].values == from_num] = to_num
+    return label
 
-def load_data_raw(dataset="coconut", external_val_set=[], filter_nums=None):
+def load_data_raw(dataset="coconut", external_val_set=[], filter_nums=None, from_num_to_num=[]):
     """
     :param dataset: coconut coco_nc2020 test
     :param filter_nums:
@@ -86,46 +89,49 @@ def load_data_raw(dataset="coconut", external_val_set=[], filter_nums=None):
             if filter_num == 3 and len_label_new != len_label_old:
                 print("GSE_before_and_after_filter_3:", GSE_ID, "old:", len_label_old, "new:", len_label_new)
                 # input()
-
+        if len(from_num_to_num) == 2:
+            print("in replace")
+            label = label_replace(label, from_num_to_num[0], from_num_to_num[1])
         sample_sum += gene_one_GSE.shape[1]
         gene_GSE.append(gene_one_GSE)  # pd
         label_GSE.append(label)  # pd
         print("***" * 10)
     print(sample_sum)
-    # label_GSE_concated = pd.concat(label_GSE, axis=0)
-    # return gene_GSE, label_GSE_concated
     return gene_GSE, label_GSE
 
 
 if __name__ == "__main__":
     import os
     os.chdir("..")
-    # gene_GSE, label_GSE = load_data_raw(dataset="only_21802_57065")
-    # gene_GSE, label_GSE = load_data_raw(dataset="all_exclude_21802_57065")
-    gene_GSE, label_GSE = load_data_raw(dataset="all_exclude2_raw63990")
-    # gene_GSE, label_GSE = load_data_raw(dataset=(21802, 57065))
-    # gene_GSE, label_GSE = load_data_raw(dataset="COVID19")
-    # gene_GSE, label_GSE = load_data_raw(dataset="GSE6269")
+    gene_GSE, label_GSE = load_data_raw(dataset="all_exclude2_6269_1_raw63990")
+    gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1).T
+    dataset_random_state = 1
     label_GSE_concated = pd.concat(label_GSE, axis=0)
-    gene_GSE_concated = pd.concat(gene_GSE, join="inner", axis=1)
-    gene_GSE_concated = gene_GSE_concated.T
-    # for gene_GSE_one in gene_GSE:
-        # print(gene_GSE_one)
-    print(label_GSE_concated.shape)
+    from sklearn.model_selection import train_test_split
+    gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test = train_test_split(
+        gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
+    print("label_GSE_concated_train.shape", label_GSE_concated_train.shape)
+    print("label_GSE_concated_test.shape", label_GSE_concated_test.shape)
+
     print(gene_GSE_concated.shape)
-    num_classes = len(pd.Categorical(label_GSE_concated["label"].values).categories)
-    print(num_classes)
-    from data_processing.process_data_label import get_label_multilabel
-    label = get_label_multilabel(label_GSE_concated)
+    print(gene_GSE_concated_train.shape)
+    print(gene_GSE_concated_test.shape)
     def sumall(label, zhi):
         return sum(label == zhi)
+
+    from data_processing.process_data_label import get_label_multilabel
+    label = get_label_multilabel(label_GSE_concated)
     a = sumall(label, 0)
     b = sumall(label, 1)
     c = sumall(label, 2)
-    print(a, b, c)
-
-    gene_GSE_one = gene_GSE[5]
-    label_GSE_one = label_GSE[5]
-    print(gene_GSE_one.shape)
-    print(label_GSE_one.shape)
-    print(label_GSE_one)
+    print("label 0, 1, 2", a, b, c)
+    label = get_label_multilabel(label_GSE_concated_train)
+    a = sumall(label, 0)
+    b = sumall(label, 1)
+    c = sumall(label, 2)
+    print("train label 0, 1, 2", a, b, c)
+    label = get_label_multilabel(label_GSE_concated_test)
+    a = sumall(label, 0)
+    b = sumall(label, 1)
+    c = sumall(label, 2)
+    print("test label 0, 1, 2", a, b, c)
