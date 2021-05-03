@@ -4,7 +4,6 @@ from data_processing.process_data_label import get_label_1
 from data_processing.process_data_label import get_label_2
 from data_processing.process_data_label import get_label_3
 from sklearn import metrics
-import pickle
 import os
 import sklearn
 from sklearn import linear_model
@@ -17,7 +16,6 @@ def binary_eval(y_test, y_pred, result_save_path, model_name=None):
         AUC = metrics.roc_auc_score(y_test, y_pred)
     except ValueError:
         print("one class wrong!")
-    # AUC = metrics.roc_auc_score(y_test, y_pred)
     print(model_name + " AUC: " + str(AUC))
     f = open(result_save_path, "a+")
     f.write(model_name + "," + str(AUC) + ",")
@@ -62,8 +60,6 @@ def biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_
         print("label function is not found")
         exit()
         return
-
-    prepared_data_path = path_data_prepared + label_selected + "/data_prepared_with_iPAGE.pickle"
 
     # label
     label_train = get_label_func(label_GSE_concated=label_GSE_concated_train)
