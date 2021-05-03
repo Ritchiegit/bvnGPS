@@ -15,6 +15,7 @@ import pickle
 import os
 def multi_eval(y_test, y_pred, result_save_path=None, model_name=None, end_epoch=0):
     AUC_0, AUC_1, AUC_2 = -1, -1, -1
+    # 按照最大值所属类别
     # y_pred_index = np.argmax(y_pred, axis=1)
     # try:
     #     AUC_0 = metrics.roc_auc_score(1 * (y_test == 0), 1 * (y_pred_index == 0))
@@ -28,6 +29,8 @@ def multi_eval(y_test, y_pred, result_save_path=None, model_name=None, end_epoch
     #     AUC_2 = metrics.roc_auc_score(1*(y_test == 2), 1*(y_pred_index == 2))
     # except ValueError:
     #     print("virus wrong!")
+
+    # 按照输出的置信度
     try:
         AUC_0 = metrics.roc_auc_score(1 * (y_test == 0), y_pred[:, 0])
     except ValueError:
@@ -40,10 +43,6 @@ def multi_eval(y_test, y_pred, result_save_path=None, model_name=None, end_epoch
         AUC_2 = metrics.roc_auc_score(1*(y_test == 2), y_pred[:, 2])
     except ValueError:
         print("virus wrong!")
-    # AUC_0 = metrics.roc_auc_score(1*(y_test == 0), 1*(y_pred_index == 0))
-    # AUC_1 = metrics.roc_auc_score(1*(y_test == 1), 1*(y_pred_index == 1))
-    # AUC_2 = metrics.roc_auc_score(1*(y_test == 2), 1*(y_pred_index == 2))
-    #  print(f"{model_name},Health{AUC_0},Bacteria{AUC_1},Virus{AUC_2}\n")
     print(f"{model_name},Health{AUC_0},Bacteria{AUC_1},Virus{AUC_2},End_epoch{end_epoch}\n")
     if result_save_path is not None:
         f = open(result_save_path, "a+")
@@ -65,7 +64,6 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     model_save_folder_path = result_save_path + "_model/"
     if not os.path.exists(model_save_folder_path):
         os.makedirs(model_save_folder_path)
-
 
     result_full_filepath = result_save_path + f"result_summary_{local_time}.csv"
     f = open(result_full_filepath, "a+")
@@ -101,9 +99,11 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     pickle.dump(clf_RF, open(model_save_file_path, "wb"))
 
     # SVM with one vs. one
-    kernel_list = ["linear"]  #  "poly", "rbf", "sigmoid"]
-    decision_function_shape_list = ["ovo", "ovr"]
-    C_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
+    kernel_list = ["linear"]
+    # decision_function_shape_list = ["ovo", "ovr"]
+    decision_function_shape_list = ["ovo"]
+    # C_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
+    C_list = [0.2]
     for kernel in kernel_list:
         for decision_function_shape in decision_function_shape_list:
             for C in C_list:
@@ -118,22 +118,30 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
                 model_save_file_path = model_save_folder_path + model_name + ".model_pickle"
                 pickle.dump(clf_svm, open(model_save_file_path, "wb"))
 
-    hidden_feature_to_search = [2, 4, 8, 16, 32, 64, 128, 256, 384, 512, 640, 768, 1024]
-    # hidden_feature_to_search = [4, 16, 64, 256, 640, 1024]
-    # hidden_feature_to_search = [2,8, 32, 128, 256, 500, 1000]
-    learning_rates = [0.01, 0.001, 0.0005]
-    # learning_rates = [0.0005]
-    optimizer_str_list = ["Adam", "Adagrad"]
+    # hidden_feature_to_search = [2, 4, 8, 16, 32, 64, 128, 256, 384, 512, 640, 768, 1024]
+    hidden_feature_to_search = [1024]
+    # learning_rates = [0.01, 0.001, 0.0005]
+    learning_rates = [0.0005]
+    # optimizer_str_list = ["Adam", "Adagrad"]
+    optimizer_str_list = ["Adam"]
     for optimizer_str in optimizer_str_list:
         for hidden_feature in hidden_feature_to_search:
-            # Neural Network
-            # hidden feature batch_size learning_rate (optimizer)
             for learning_rate in learning_rates:
-                model_name = f"NeuralNetworkMSE_opt{optimizer_str}_h{hidden_feature}_lr{learning_rate}"
+                model_name = f"NN_opt{optimizer_str}_h{hidden_feature}_lr{learning_rate}"
                 print(model_name)
                 y_pred, end_epoch = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 2000, sklearn_random=sklearn_random, criterion_type="MSE", hidden_feature=hidden_feature, learning_rate=learning_rate, optimizer_str=optimizer_str,
                                                          model_save_folder_path=model_save_folder_path, model_name_for_save=model_name)
                 multi_eval(y_test, y_pred, result_full_filepath, model_name, end_epoch)
+
+    # learning_rate = 0.001
+    # optimizer_str = "Adam"
+    # hidden_feature_list = [16, 16]
+    # model_name = f"MFCN_MSE_opt{optimizer_str}_h{hidden_feature_list[0]}_{hidden_feature_list[1]}_lr{learning_rate}"
+    # y_pred, end_epoch = NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, 2000, sklearn_random=sklearn_random,
+    #                                          criterion_type="MSE", learning_rate=learning_rate, optimizer_str=optimizer_str,
+    #                                          model_str="multi_layers_FCN", hidden_feature_list=hidden_feature_list, model_save_folder_path=model_save_folder_path, model_name_for_save=model_name)
+    # print(model_name)
+    # multi_eval(y_test, y_pred, result_full_filepath, model_name, end_epoch)
 
     f = open(result_full_filepath, "a+")
     f.write("\n")
