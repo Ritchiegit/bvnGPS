@@ -88,7 +88,8 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     lda = LDA(n_components=1)
     X_train_after_LDA = lda.fit_transform(X_train, y_train)
     X_test_after_LDA = lda.transform(X_test)
-    clf_RF = RandomForestClassifier(random_state=108)
+    clf_RF = RandomForestClassifier()
+    # clf_RF = RandomForestClassifier(random_state=108)
     clf_RF.fit(X_train_after_LDA, y_train)
     y_pred = clf_RF.predict(X_test_after_LDA)
     y_pred_onehot = np.eye(num_classes)[y_pred]
@@ -98,12 +99,12 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
     pickle.dump(lda, open(model_save_file_lda_path, "wb"))
     pickle.dump(clf_RF, open(model_save_file_path, "wb"))
 
-    # SVM with one vs. one
+    # SVM with one vs. one  40
     kernel_list = ["linear"]
-    # decision_function_shape_list = ["ovo", "ovr"]
-    decision_function_shape_list = ["ovo"]
-    # C_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
-    C_list = [0.2]
+    decision_function_shape_list = ["ovo", "ovr"]
+    # decision_function_shape_list = ["ovo"]
+    C_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0]
+    # C_list = [0.2]
     for kernel in kernel_list:
         for decision_function_shape in decision_function_shape_list:
             for C in C_list:
@@ -118,12 +119,12 @@ def summary_and_train(train_data_all, test_data_all, label_train, label_test, re
                 model_save_file_path = model_save_folder_path + model_name + ".model_pickle"
                 pickle.dump(clf_svm, open(model_save_file_path, "wb"))
 
-    # hidden_feature_to_search = [2, 4, 8, 16, 32, 64, 128, 256, 384, 512, 640, 768, 1024]
-    hidden_feature_to_search = [1024]
-    # learning_rates = [0.01, 0.001, 0.0005]
-    learning_rates = [0.0005]
-    # optimizer_str_list = ["Adam", "Adagrad"]
-    optimizer_str_list = ["Adam"]
+    hidden_feature_to_search = [2, 4, 8, 16, 32, 64, 128, 256, 384, 512, 640, 768, 1024]  # 76
+    # hidden_feature_to_search = [1024]
+    learning_rates = [0.01, 0.001, 0.0005]
+    # learning_rates = [0.0005]
+    optimizer_str_list = ["Adam", "Adagrad"]
+    # optimizer_str_list = ["Adam"]
     for optimizer_str in optimizer_str_list:
         for hidden_feature in hidden_feature_to_search:
             for learning_rate in learning_rates:

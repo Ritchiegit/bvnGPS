@@ -45,8 +45,8 @@ def biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_
     :return:
     """
     # parameters
-    if not os.path.exists(path_data_prepared + label_selected + "/"):
-        os.makedirs(path_data_prepared + label_selected + "/")
+    # if not os.path.exists(path_data_prepared + label_selected + "/"):
+    #     os.makedirs(path_data_prepared + label_selected + "/")
 
     if label_selected == "control":
         get_label_func = get_label_0
