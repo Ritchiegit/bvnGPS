@@ -4,11 +4,7 @@ from load_data.load_data_raw import load_data_raw
 from sklearn.model_selection import train_test_split
 from data_processing.process_data_label import get_label_multilabel
 import os
-import matplotlib
 from matplotlib import pyplot as plt
-
-# matplotlib.rcParams['pdf.fonttype'] = 84
-# matplotlib.rcParams['ps.fonttype'] = 84
 
 os.chdir("..")
 dataset = "only_21802_57065"
@@ -72,7 +68,7 @@ plt.vlines(len_1+len_2, 0, 1, color="k", linestyles="--")
 plt.xticks([len_1/2,len_1+len_2/2, len_1 + len_2 + len_0/2],['Bacterial', 'Viral', 'Noninfected'], fontsize=15)
 plt.xlim((0, len_0+len_1+len_2))
 plt.ylim((0, 1))
-plt.ylabel('Probability', fontsize=15)  # 可以使用中文，但需要导入一些库即字体
+plt.ylabel('Probability', fontsize=15)
 plt.grid()
 plt.legend(loc="right", fontsize=15)
 plt.tight_layout()

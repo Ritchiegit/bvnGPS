@@ -13,9 +13,6 @@ source_folder_test = f"../results/final_model_results/{dataset_sig}/predict_onal
 source_folder_val = f"../results/final_model_results/{dataset_sig}/predict_ononly_21802_57065None_validation/"
 # final_average_csv_path = "../results/final_model_results/20210326_external2_1_iPAGE_all_exclude_21802_57065/predict_ononly_21802_57065None_validation/10.csv"
 
-# 需要读入的数据
-
-# fig = plt.figure(figsize=(8, 8))
 fig, all_ax = plt.subplots(1, 4, figsize=(8, 8))
 cbar_ax = fig.add_axes([.91, .3, .03, .4])
 source_folder_all = [source_folder_train, source_folder_test, source_folder_val]

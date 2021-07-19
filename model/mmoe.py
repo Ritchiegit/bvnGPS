@@ -1,11 +1,10 @@
 # coding: UTF-8
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 class Config(object):
     def __init__(self, num_experts=8, expert_unit=16, hidden_units=8):
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # ok
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.label_dict = [1,1,1]  # ok
         self.num_feature = 49  # input feature ok
         self.num_tasks = 3  # ok
@@ -88,7 +87,7 @@ class MMoE(nn.Module):
         for gate_output in gate_outputs:
             expanded_gate_output = torch.unsqueeze(gate_output, 1)
             weighted_expert_output = expert_outputs * expanded_gate_output.expand_as(expert_outputs)
-            final_outputs.append(torch.sum(weighted_expert_output, 2))  # 最后的一波汇总
+            final_outputs.append(torch.sum(weighted_expert_output, 2))
         # print("len(gate_output)", len(gate_output))
         output_layers = []
         for i, output in enumerate(final_outputs):

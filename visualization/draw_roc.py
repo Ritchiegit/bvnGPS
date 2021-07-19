@@ -74,7 +74,7 @@ for pred_file in pred_file_list:
         plt.plot(fpr, tpr, lw=lw, label=f'{class_num[i]} (AUC=%0.2f)' % roc_auc)
         plt.plot([0, 1], [0, 1], color='k', lw=lw, linestyle='--')
         plt.xlabel('False Positive Rate', fontsize=12)
-        plt.ylabel('True Positive Rate', fontsize=12)  # 可以使用中文，但需要导入一些库即字体
+        plt.ylabel('True Positive Rate', fontsize=12)
         # plt.title('ROC Curve')
         plt.grid()
         plt.legend(loc="lower right", fontsize=12)

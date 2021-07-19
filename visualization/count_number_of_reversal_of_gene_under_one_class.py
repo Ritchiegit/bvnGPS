@@ -122,11 +122,6 @@ for i in final_csv.index:
 
     # Plot
     plt.subplot(row_num, col_num, i+1)
-    # ax = sns.heatmap(df, xticklabels=df.corr().columns,
-    #                  yticklabels    =df.corr().columns, cmap='magma',
-    #                  linewidths=6, annot=True)
-    # ax = sns.heatmap(df, linewidths=6, cbar=False, xticklabels=["g1>g2", "g1<g2"], yticklabels=["Neg", "Pos"], annot=True, fmt='.20g',
-    #                       cmap="Blues")  # Greys	PuRd	RdPu	OrRd	Reds	YlOrRd
     ax = sns.heatmap(df, linewidths=6, cbar=True,
                      xticklabels=["$g_{i}>g_{j}$", "$g_{i} \leq g_{j}$"], yticklabels=["Nega", "Posi"],
                      annot=True, fmt='.0%',

@@ -1,25 +1,22 @@
 save_path = "./nc_20210224_process/"
 
-
-# 更换工作目录
 options(BioC_mirror="http://mirrors.tuna.tsinghua.edu.cn/bioconductor/")
-options("repos"=c(CRAN="http://mirrors.tuna.tsinghua.edu.cn/CRAN/")) ##设置国内的镜像下载包速度快一点
+options("repos"=c(CRAN="http://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
 
+# change the "FALSE" to "TURE" to install R package
 if(FALSE)
 {
-  # GEOquery 安装
-  # AnnoProbe 安装
+  # GEOquery
   if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
   BiocManager::install("GEOquery")
-  # BiocManager::install('包的名称',lib = "路径")  # lib可以不用我是因为在服务器怕安装到公共空间去了
-  
+
+  # AnnoProbe
   install.packages('devtools')
   library(devtools)
   install_github('jmzeng1314/AnnoProbe')
 }
 
-##加载R包
 library(GEOquery)
 library(AnnoProbe)
 
@@ -118,12 +115,12 @@ description_to_label <- function(des){
     else if (substring(des_each, 1, 3) == "Vir") {key = 2}
     
     # 42834
-    else if (substring(des_each, 1, 2) == "TB") {key=1}  # 结核病
-    else if (substring(des_each, 1, 7) == "Sarcoid") {key=10}  # 肉结 删去
-    else if (substring(des_each, 1, 9) == "Pneumonia") {key=10}  # 肺炎 删去
-    else if (substring(des_each, 1, 6) == "Cancer") {key=10}  # 癌症 删去
+    else if (substring(des_each, 1, 2) == "TB") {key=1}  # Tuberculosis
+    else if (substring(des_each, 1, 7) == "Sarcoid") {key=10}
+    else if (substring(des_each, 1, 9) == "Pneumonia") {key=10}
+    else if (substring(des_each, 1, 6) == "Cancer") {key=10}
     
-    else if (substring(des_each, 1, 61) == "infection: our tests did not detect one of the viruses sought") {key=10}  # 结核病
+    else if (substring(des_each, 1, 61) == "infection: our tests did not detect one of the viruses sought") {key=10}
     else if (substring(des_each, 1, 40) == "infection: respiratory syncytial virus A") {key=2}  
     else if (substring(des_each, 1, 22) == "infection: enterovirus") {key=2}  
     else if (substring(des_each, 1, 27) == "infection: human rhinovirus") {key=2}  
@@ -133,7 +130,7 @@ description_to_label <- function(des){
     else if (substring(des_each, 1, 28) == "infection: influenza A virus") {key=2} 
 
     else {
-      print("出现了没见过的字符"); 
+      print("Unseen characters appeared");
       print(des_each);
       readline()
     }
@@ -147,22 +144,22 @@ get_detail_func <- function(GSE_ID_each){
   print(GSE_ID_each)
   GSE_ID_each_cated = paste("GSE", GSE_ID_each, sep="")
   print(GSE_ID_each_cated)
-  #step1 获取数据的探针表达矩阵
-  gset=AnnoProbe::geoChina(GSE_ID_each_cated) #举个例子要GSE63514的数据 好像只能下载到当前路径，有点乱
-  # suppressWarnings(load(paste("./", GSE_ID_each_cated,"_eSet.Rdata", sep="")))  # 应用当前路径下的输出
+  # step1 Probe expression matrix for acquiring data
+  gset=AnnoProbe::geoChina(GSE_ID_each_cated)
+  # suppressWarnings(load(paste("./", GSE_ID_each_cated,"_eSet.Rdata", sep="")))  # Apply the gset in the current path
   eSet=gset[[1]]
   probes_expr_without_log2 <- exprs(eSet);dim(probes_expr_without_log2)
   probes_expr_with_log2=log2(probes_expr_without_log2+1)
-  phenoDat <- pData(eSet)  # TODO
+  phenoDat <- pData(eSet)
   write.table(phenoDat, file=paste(save_path, "all_lc_", GSE_ID_each_cated, ".csv",sep=""), sep=",", row.names=T, quote=FALSE)
-  #step2 获取数据的平台文件对探针加以注释 这些很简单，这个包有直接注释的函数，你要是想自己处理也可以
+  # step2 Annotate the probe in the platform file from which the data was obtained
   gpl=eSet@annotation
   checkGPL(gpl)
   printGPLInfo(gpl)
-  probe2gene=idmap(gpl)  # GPL570_bioc.rda
+  probe2gene=idmap(gpl)
   head(probe2gene)
-  genes_expr_with_log2 <-filterEM(probes_expr_with_log2,probe2gene)  ##将序号转化为基因 得到了注释后的表达谱
-  genes_expr_without_log2 <-filterEM(probes_expr_without_log2,probe2gene)  ##将序号转化为基因 得到了注释后的表达谱
+  genes_expr_with_log2 <-filterEM(probes_expr_with_log2,probe2gene)
+  genes_expr_without_log2 <-filterEM(probes_expr_without_log2,probe2gene)
   
   if (GSE_ID_each == "69528"){
     phenoDat_col1 = phenoDat["study group:ch1"]

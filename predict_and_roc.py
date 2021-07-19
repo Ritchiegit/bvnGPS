@@ -84,8 +84,8 @@ if __name__ == "__main__":
     # 数据 模型（批量）
     # 7 3 external
     base_path = "results/final_model_results/"
-    model_total_folder_name_path = f"{base_path}{model_total_folder_name}/"  # results/20210325_external_57065_2_iPAGE_all_exclude_57065
-    model_one_folder_name_list = os.listdir(model_total_folder_name_path)  # 很多 20210325_external_57065_2_iPAGE_all_exclude_57065_seed111_dataRS1_model
+    model_total_folder_name_path = f"{base_path}{model_total_folder_name}/"
+    model_one_folder_name_list = os.listdir(model_total_folder_name_path)
     result_final_save_path = model_total_folder_name_path + f"predict_on{dataset}{type_part_dataset}_validation/"
     if not os.path.exists(result_final_save_path):
         os.makedirs(result_final_save_path)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
             continue
         if not check_end_of_name(model_one_folder_name, "model"):
             continue
-        model_folder_name = model_total_folder_name_path + model_one_folder_name + "/"  # results/20210325_external_57065_2_iPAGE_all_exclude_57065/20210325_external_57065_2_iPAGE_all_exclude_57065_seed111_dataRS1_model
+        model_folder_name = model_total_folder_name_path + model_one_folder_name + "/"
         model_list = os.listdir(model_folder_name)  #
         result_final_save_file = result_final_save_path + f"{model_one_folder_name}.csv"
         f = open(result_final_save_file, "w")

@@ -1,5 +1,4 @@
-import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
+
 import pandas as pd
 import os
 from load_data.load_data_raw import load_data_raw

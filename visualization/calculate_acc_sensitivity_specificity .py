@@ -81,21 +81,6 @@ for pred_file in pred_file_list:
         save_one = (pred_file[:-4], class_num[i], acc, sensitivity, specificity, tn, fp, fn, tp)
         print(save_one)
         final_print.append(save_one)
-    #     fpr, tpr, _ = roc_curve(label_one, pred_one)
-    #     roc_auc = auc(fpr, tpr)
-    #     lw = 1
-    #     plt.plot(fpr, tpr, lw=lw, label=f'{class_num[i]} (AUC=%0.2f)' % roc_auc)
-    #     plt.plot([0, 1], [0, 1], color='k', lw=lw, linestyle='--')
-    #     plt.xlabel('False Positive Rate')
-    #     plt.ylabel('True Positive Rate')  # 可以使用中文，但需要导入一些库即字体
-    #     # plt.title('ROC Curve')
-    #     plt.grid()
-    #     plt.legend(loc="lower right")
-    #     plt.tight_layout()
-    #     # plt.savefig(f'{path_png}{pred_file[:-4]}.png')
-    # plt.show()
 
-    # plt.close()
-    # input()
 df = pd.DataFrame(final_print)
 df.to_csv(path_acc_sensitivity_specificity+file_to_save_name)

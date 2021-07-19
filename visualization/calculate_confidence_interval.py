@@ -1,39 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import stats
-
-
-"""
-# https://blog.csdn.net/jiajiren11/article/details/90400595
-# https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.norm.html
-
-N = 10000
-x = np.random.normal(0, 1, N)
-# ddof取值为1是因为在统计学中样本的标准偏差除的是(N-1)而不是N，统计学中的标准偏差除的是N
-# SciPy中的std计算默认是采用统计学中标准差的计算方式
-# mean, std = x.mean(), x.std(ddof=1)
-# mean, std = 0, 1
-a1 = np.ones((4, 3, 1))
-a2 = 2 * np.ones((4, 3, 1))
-a3 = 3 * np.ones((4, 3, 1))
-a = np.dstack((a1, a2, a3))
-print(a.shape)
-
-mean = a.mean(2)
-print(mean)
-std = a.std(axis=2, ddof=1)
-print(std)
-print(mean, std)
-# 计算置信区间
-# 这里的0.9是置信水平
-conf_intveral = stats.norm.interval(0.6827, loc=mean, scale=std)
-print(conf_intveral)
-conf_intveral = stats.norm.interval(0.9545, loc=mean, scale=std)
-print(conf_intveral)
-conf_intveral = stats.norm.interval(0.9973, loc=mean, scale=std)
-print(conf_intveral)
-"""
-# input mean, std
 
 import pandas as pd
 import glob

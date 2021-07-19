@@ -134,16 +134,13 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
 
     model = model.to(device)
     if optimizer_str == "Adam":
-        optimizer = optim.Adam(model.parameters(), lr=learning_rate)  # 之前都是0.0001
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     elif optimizer_str == "Adagrad":
         optimizer = optim.Adagrad(model.parameters(), lr=learning_rate)
     else:
         print("please check optimizer")
         input()
         return
-
-    # optimizer = optim.Adam(model.parameters(), lr=learning_rate)  # 之前都是0.0001
-    # optimizer = optim.Adagrad(model.parameters(), lr=learning_rate)  # 之前都是0.0001
     if criterion_type == "CE":
         criterion = nn.CrossEntropyLoss()
     elif criterion_type == "MSE":
@@ -179,28 +176,3 @@ def NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, max_epoc
         torch.save(model, f"{model_save_folder_path}/{model_name_for_save}_val{val_loss}_epoch{end_epoch}.pth")
     y_pred = pred(model=model, X_test=X_test)
     return y_pred, end_epoch
-
-# torch.save(model.state_dict(), PATH)
-# model = TheModelClass(*args, **kwargs)
-# model.load_state_dict(torch.load(PATH))
-# model.eval()
-# if __name__ == "__main__":
-#     sklearn_random = 109
-#     gene_GSE, label_GSE_concated = load_data_raw()
-#     label = get_sick_label(label_GSE_concated)
-#     import pandas as pd
-#     num_classes = len(pd.Categorical(label).categories)
-#     print("num_classes", num_classes)
-#     path_data_without_process = "data_without_process.pickle"
-#     if os.path.exists(path_data_without_process):
-#         data = pickle.load(open(path_data_without_process, "rb"))
-#     else:
-#         print("输入字符 进行数据处理")
-#         input()
-#         from data_processing.process_data_label import get_data_without_process
-#         gene_GSE, label_GSE_concated = load_data_raw()
-#         data = get_data_without_process(gene_GSE, label)  # get_data_without_process(gene_GSE_adjusted_concated, gene_GSE)
-#         pickle.dump(data, open(path_data_without_process, "wb"))
-#     X_train, X_test, y_train, y_test = train_test_split(data, label, test_size=0.3, random_state=sklearn_random)
-#     NN_2layer_train_test(X_train, X_test, y_train, y_test, num_classes, sklearn_random=sklearn_random)
-#     #  train_eval(data, label, result_save_path, "without_process")

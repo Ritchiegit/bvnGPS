@@ -34,23 +34,25 @@ def load_data_raw(dataset="coconut", external_val_set=[], filter_nums=None, from
         print(GSE_IDs)
         data_paths = ["data/coconut_20210127/", "data/nc2020/", "data/host2016_20210322/"]
     elif dataset == "all_exclude2_raw63990":
-        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990_raw_label", "66099",  # 顺序需要注意
+        GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990_raw_label", "66099",
                             "27131", "28750", "42834",          "68310", "69528", "111368",
                    # "6269_2", "6269_3"]
-                   "6269_1", "6269_2", "6269_3"]  # 如果使用 GPL2507 处理出来的数据集 共有基因个数只有4794个 可能很影响性能。 但还是用
+                   "6269_1", "6269_2", "6269_3"]
+        # If the data set processed by GPL2507 is used,
+        # the total number of genes is only 4,794, which may affect performance.
         data_paths = ["data/coconut_20210127/", "data/nc2020/", "data/host2016_20210322/"]
     elif dataset == "all_exclude2_6269_1_raw63990":
         GSE_IDs = ["20346", "40012", "40396", "42026", "60244", "63990_raw_label", "66099",  # 顺序需要注意
                             "27131", "28750", "42834",          "68310", "69528", "111368",
                    # "6269_2", "6269_3"]
-                   "6269_2", "6269_3"]  # 如果使用 GPL2507 处理出来的数据集 共有基因个数只有4794个 可能很影响性能。 但还是用
+                   "6269_2", "6269_3"]
         data_paths = ["data/coconut_20210127/", "data/nc2020/", "data/host2016_20210322/"]
     elif dataset == "only_21802_57065":
         GSE_IDs = ["21802", "57065"]
         data_paths = ["data/nc2020/"]
     else:
-        print("请检查数据集字符串格式")
-        input()
+        print("Please check the data set string format")
+        exit(1)
         return
     external_val_set = list(map(str, external_val_set))
     GSE_IDs = list_1_minus_list_2(GSE_IDs, external_val_set)
@@ -66,7 +68,7 @@ def load_data_raw(dataset="coconut", external_val_set=[], filter_nums=None, from
             mRNA_glob = glob.glob(data_path + f"exp_gene_GSE{GSE_ID}.txt")
             print(mRNA_glob)
             if len(mRNA_glob) != 0:
-                break  # 存在时就推出
+                break
         keys = []
         if len(mRNA_glob) != 0:
             mRNA = pd.read_csv(mRNA_glob[0], sep="\t")
@@ -93,8 +95,8 @@ def load_data_raw(dataset="coconut", external_val_set=[], filter_nums=None, from
             print("in replace")
             label = label_replace(label, from_num_to_num[0], from_num_to_num[1])
         sample_sum += gene_one_GSE.shape[1]
-        gene_GSE.append(gene_one_GSE)  # pd
-        label_GSE.append(label)  # pd
+        gene_GSE.append(gene_one_GSE)  # each element is a pandas.Dataframe
+        label_GSE.append(label)  # each element is a pandas.Dataframe
         print("***" * 10)
     print(sample_sum)
     return gene_GSE, label_GSE
@@ -116,22 +118,4 @@ if __name__ == "__main__":
     print(gene_GSE_concated.shape)
     print(gene_GSE_concated_train.shape)
     print(gene_GSE_concated_test.shape)
-    def sumall(label, zhi):
-        return sum(label == zhi)
 
-    from data_processing.process_data_label import get_label_multilabel
-    label = get_label_multilabel(label_GSE_concated)
-    a = sumall(label, 0)
-    b = sumall(label, 1)
-    c = sumall(label, 2)
-    print("label 0, 1, 2", a, b, c)
-    label = get_label_multilabel(label_GSE_concated_train)
-    a = sumall(label, 0)
-    b = sumall(label, 1)
-    c = sumall(label, 2)
-    print("train label 0, 1, 2", a, b, c)
-    label = get_label_multilabel(label_GSE_concated_test)
-    a = sumall(label, 0)
-    b = sumall(label, 1)
-    c = sumall(label, 2)
-    print("test label 0, 1, 2", a, b, c)

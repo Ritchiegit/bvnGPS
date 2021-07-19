@@ -65,8 +65,6 @@ if __name__ == "__main__":
         os.makedirs(result_biomarker)
     # 2. split the train set/ test set
     # 2.1 cohort
-
-    # 内部验证比例，内部验证随机数，总数据集名称，外部验证数据集，
     if test_mode == "cohort":
         gene_GSE, label_GSE = load_data_raw(dataset=dataset)
 
@@ -220,11 +218,7 @@ if __name__ == "__main__":
         exit(1)
 
 
-    # 3. 筛选出 pair_index的基因，获得划分阈值的电平
-    ## iPAGE 筛选出显著的对
-    ### 在训练集上计算出iPAGE的对
-    ### 在测试集上同样筛选出与上一行相同的对
-    ## 使用LASSO在上面进行训练 获得筛选出来的pair
+    # 3. select pair with iPAGE and lasso
     pair_index_selected_0, pair_index_exact_expressed_list_final_0 = biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test,
                                                                                                                         "control", path_data_prepared, result_2categories_path, local_time=local_time, SEED=SEED, threshold=ipage_threshold)
     pair_index_selected_1, pair_index_exact_expressed_list_final_1 = biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test,
@@ -232,7 +226,7 @@ if __name__ == "__main__":
     pair_index_selected_2, pair_index_exact_expressed_list_final_2 = biomarker_select(gene_GSE_concated_train, gene_GSE_concated_test, label_GSE_concated_train, label_GSE_concated_test,
                                                                                                                         "virus", path_data_prepared, result_2categories_path, local_time=local_time, SEED=SEED, threshold=ipage_threshold)
 
-    # 4. 总结跳出的pair并存储
+    # 4. save pairs
     pair_after_lasso_0 = list_with_index(pair_index_exact_expressed_list_final_0, pair_index_selected_0)
     pair_after_lasso_1 = list_with_index(pair_index_exact_expressed_list_final_1, pair_index_selected_1)
     pair_after_lasso_2 = list_with_index(pair_index_exact_expressed_list_final_2, pair_index_selected_2)
@@ -240,7 +234,7 @@ if __name__ == "__main__":
     pair_after_lasso_123 = [pair_after_lasso_0, pair_after_lasso_1, pair_after_lasso_2]
     pair_after_lasso = list(set(list(itertools.chain(*pair_after_lasso_123))))
     pair_after_lasso = sorted(pair_after_lasso)
-    # 存储ipage、LASSO筛选出的类别个数
+    # Store the number of pairs filtered by ipage and LASSO
     save_list_of_tuple(pair_after_lasso_0, result_biomarker + "pair_after_lasso_0.csv")
     save_list_of_tuple(pair_after_lasso_1, result_biomarker + "pair_after_lasso_1.csv")
     save_list_of_tuple(pair_after_lasso_2, result_biomarker + "pair_after_lasso_2.csv")
@@ -255,7 +249,7 @@ if __name__ == "__main__":
     """
     if not os.path.exists(result_final_save_path):
     os.makedirs(result_final_save_path)
-    # 5. 获得数据
+    # 5. load data and train
     train_data_all = calculate_delta_and_relative_expression(pair_after_lasso, gene_GSE_concated_train)
     test_data_all = calculate_delta_and_relative_expression(pair_after_lasso, gene_GSE_concated_test)
 

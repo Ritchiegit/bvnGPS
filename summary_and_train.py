@@ -15,22 +15,6 @@ import pickle
 import os
 def multi_eval(y_test, y_pred, result_save_path=None, model_name=None, end_epoch=0):
     AUC_0, AUC_1, AUC_2 = -1, -1, -1
-    # 按照最大值所属类别
-    # y_pred_index = np.argmax(y_pred, axis=1)
-    # try:
-    #     AUC_0 = metrics.roc_auc_score(1 * (y_test == 0), 1 * (y_pred_index == 0))
-    # except ValueError:
-    #     print("uninfected wrong!")
-    # try:
-    #     AUC_1 = metrics.roc_auc_score(1*(y_test == 1), 1*(y_pred_index == 1))
-    # except ValueError:
-    #     print("bacteria wrong!")
-    # try:
-    #     AUC_2 = metrics.roc_auc_score(1*(y_test == 2), 1*(y_pred_index == 2))
-    # except ValueError:
-    #     print("virus wrong!")
-
-    # 按照输出的置信度
     try:
         AUC_0 = metrics.roc_auc_score(1 * (y_test == 0), y_pred[:, 0])
     except ValueError:

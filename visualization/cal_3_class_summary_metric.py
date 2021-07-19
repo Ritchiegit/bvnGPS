@@ -54,10 +54,10 @@ for random_seed_filename in random_seed_filename_list:
         continue
     path_model = f"{pre_result_total_path}/{random_seed_filename}/{dataset}{type_part_dataset}/"
     print("path_model", path_model)
-    pred_file_list = os.listdir(path_model)  # 找到类别下的所有 model输出csv
+    pred_file_list = os.listdir(path_model)
     final_print = []
-    pred_file_list.sort()  # 重要
-    for pred_file in pred_file_list:  # 单个模型的输出 csv 单个csv 计算出来一个acc
+    pred_file_list.sort()  # important
+    for pred_file in pred_file_list:  # The output of a single model csv A single csv calculates an acc
         pred_path = path_model + "/" + pred_file
         if os.path.isdir(pred_path):
             continue
@@ -84,10 +84,10 @@ for random_seed_filename in random_seed_filename_list:
 
         save_one = (f"{pred_file}", acc_1, p_macro, p_micro, p_weighted, r_macro, r_micro, r_weighted, f1_micro, f1_micro, f1_weighted, kappa_score, hamming_loss)
         final_print.append(save_one)
-    # 多个csv（多个模型）的结果排列起来得到所有模型的汇总 final_print
+    # Multiple csv (multiple models) results are arranged to get a summary of all models final_print
     df = pd.DataFrame(final_print)
     df.set_index([0], inplace=True)
-    df_list.append(df)  # 所有随机数的汇总
+    df_list.append(df)  # Summary of all random numbers
 print(len(df_list))
 final_result_nptensor = np.dstack(df_list)
 # print("final_result_nptensor.shape", final_result_nptensor.shape)
