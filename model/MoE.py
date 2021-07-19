@@ -32,6 +32,6 @@ class MoE(nn.Module):
             x = self.bns[i](x)
             x_out = self.linears_2[i](x)
             x_out_all += x_out
-        # x_out_all = F.softmax(x_out_all)
-        x_out_all = F.sigmoid(x_out_all)
+        x_out_all = F.softmax(x_out_all)
+        # x_out_all = F.sigmoid(x_out_all)
         return x_out_all

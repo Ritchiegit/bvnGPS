@@ -78,6 +78,10 @@ for random_seed_filename in random_seed_filename_list:
         f1_weighted = sklearn.metrics.f1_score(label, pred_3_argmax, average="weighted")
         kappa_score = sklearn.metrics.cohen_kappa_score(label, pred_3_argmax)
         hamming_loss = sklearn.metrics.hamming_loss(label, pred_3_argmax)
+        confusion_matrix = sklearn.metrics.confusion_matrix(label, pred_3_argmax)
+        print(confusion_matrix)
+
+
         save_one = (f"{pred_file}", acc_1, p_macro, p_micro, p_weighted, r_macro, r_micro, r_weighted, f1_micro, f1_micro, f1_weighted, kappa_score, hamming_loss)
         final_print.append(save_one)
     # 多个csv（多个模型）的结果排列起来得到所有模型的汇总 final_print
@@ -86,11 +90,11 @@ for random_seed_filename in random_seed_filename_list:
     df_list.append(df)  # 所有随机数的汇总
 print(len(df_list))
 final_result_nptensor = np.dstack(df_list)
-print("final_result_nptensor.shape", final_result_nptensor.shape)
+# print("final_result_nptensor.shape", final_result_nptensor.shape)
 final_result_mean = final_result_nptensor.mean(2)
 print("final_result_mean.shape", final_result_mean.shape)
 final_result_mean_pd = pd.DataFrame(final_result_mean)
 final_result_mean_pd.columns = ["acc_1", "p_macro", "p_micro", "p_weighted", "r_macro", "r_micro", "r_weighted", "f1_micro", "f1_micro", "f1_weighted", "kappa_score", "hamming_loss"]
 final_result_mean_pd.index = df.index
 print(final_result_mean_pd)
-final_result_mean_pd.to_csv(path_acc_sensitivity_specificity+file_to_save_name)
+# final_result_mean_pd.to_csv(path_acc_sensitivity_specificity+file_to_save_name)

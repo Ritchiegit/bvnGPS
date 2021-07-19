@@ -18,6 +18,6 @@ class FCN(nn.Module):
         x = F.relu(x)
         x = self.bn(x)
         x = self.linear2(x)
-        # x = F.softmax(x, dim=1)
-        x = F.sigmoid(x)
+        x = F.softmax(x, dim=1)
+        # x = F.sigmoid(x)
         return x

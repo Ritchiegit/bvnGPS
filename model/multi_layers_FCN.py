@@ -34,8 +34,8 @@ class mutli_layers_FCN(nn.Module):
             x = bn(x)
 
         x = self.last_layer_linear(x)
-        # x = F.softmax(x, dim=1)
-        x = F.sigmoid(x)
+        x = F.softmax(x, dim=1)
+        # x = F.sigmoid(x)
         return x
 
 

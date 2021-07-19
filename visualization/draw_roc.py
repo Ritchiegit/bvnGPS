@@ -10,12 +10,12 @@ from sklearn.model_selection import train_test_split
 path_model = "results/final_model_results/20210416_3_smx/pred_result/20210416_3_smx_iPAGE_all_exclude2_6269_1_raw63990_seed122_dataRS1_ran07_exter_val[21802, 57065]_model/only_21802_57065None/"
 dataset = "only_21802_57065"
 type_part_dataset = None
-path_model = "results/final_model_results/20210416_3_smx/pred_result/20210416_3_smx_iPAGE_all_exclude2_6269_1_raw63990_seed122_dataRS1_ran07_exter_val[21802, 57065]_model/all_exclude2_6269_1_raw639900.3/"
-dataset = "all_exclude2_6269_1_raw63990"
-type_part_dataset = "0.3"
-path_model = "results/final_model_results/20210416_3_smx/pred_result/20210416_3_smx_iPAGE_all_exclude2_6269_1_raw63990_seed122_dataRS1_ran07_exter_val[21802, 57065]_model/all_exclude2_6269_1_raw639900.7/"
-dataset = "all_exclude2_6269_1_raw63990"
-type_part_dataset = "0.7"
+# path_model = "results/final_model_results/20210416_3_smx/pred_result/20210416_3_smx_iPAGE_all_exclude2_6269_1_raw63990_seed122_dataRS1_ran07_exter_val[21802, 57065]_model/all_exclude2_6269_1_raw639900.3/"
+# dataset = "all_exclude2_6269_1_raw63990"
+# type_part_dataset = "0.3"
+# path_model = "results/final_model_results/20210416_3_smx/pred_result/20210416_3_smx_iPAGE_all_exclude2_6269_1_raw63990_seed122_dataRS1_ran07_exter_val[21802, 57065]_model/all_exclude2_6269_1_raw639900.7/"
+# dataset = "all_exclude2_6269_1_raw63990"
+# type_part_dataset = "0.7"
 pred_file_list = os.listdir(path_model)
 print("pred_file_list", len(pred_file_list))
 
@@ -73,13 +73,13 @@ for pred_file in pred_file_list:
         lw = 1
         plt.plot(fpr, tpr, lw=lw, label=f'{class_num[i]} (AUC=%0.2f)' % roc_auc)
         plt.plot([0, 1], [0, 1], color='k', lw=lw, linestyle='--')
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')  # 可以使用中文，但需要导入一些库即字体
+        plt.xlabel('False Positive Rate', fontsize=12)
+        plt.ylabel('True Positive Rate', fontsize=12)  # 可以使用中文，但需要导入一些库即字体
         # plt.title('ROC Curve')
         plt.grid()
-        plt.legend(loc="lower right")
+        plt.legend(loc="lower right", fontsize=12)
         plt.tight_layout()
-        plt.savefig(f'{path_png}{pred_file[:-4]}.png')
+        plt.savefig(f'{path_png}{pred_file[:-4]}_font0513.png')
     plt.show()
 
     plt.close()
