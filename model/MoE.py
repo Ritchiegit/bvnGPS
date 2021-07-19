@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
 class MoE(nn.Module):
     def __init__(self, input_feature=22583, hidden_feature=256, output_feature=2, Expert_num=8):
 

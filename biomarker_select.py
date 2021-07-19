@@ -4,7 +4,6 @@ from data_processing.process_data_label import get_label_1
 from data_processing.process_data_label import get_label_2
 from data_processing.process_data_label import get_label_3
 from sklearn import metrics
-import os
 import sklearn
 from sklearn import linear_model
 import numpy as np

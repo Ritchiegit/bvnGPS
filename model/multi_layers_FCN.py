@@ -1,7 +1,6 @@
 from torch import nn
 import torch
 import torch.nn.functional as F
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -39,23 +38,6 @@ class mutli_layers_FCN(nn.Module):
         return x
 
 
-"""
-1. 
-input Linear hidden1
-bn
-hidden1 Linear hidden2
-bn
----
-hidden2 Linear output
-softmax
-
-2. 
-input Linear hidden1
-bn
----
-hidden1 Linear output
-softmax
-"""
 if __name__ == "__main__":
     import pandas as pd
     from sklearn.model_selection import train_test_split

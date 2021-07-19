@@ -1,16 +1,8 @@
-import glob
 import pickle
 from summary_and_train import multi_eval
-from model.FCN import FCN
-from model.MoE import MoE
-from model.mmoe import MMoE
-from model.mmoe import Config
-from model.multi_layers_FCN import mutli_layers_FCN
 import torch
 import numpy as np
-import os
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# device = torch.device("cpu")  # TODO cpu
 num_classes = 3
 
 
@@ -34,7 +26,7 @@ def test_sklearn(clf_path, data, label, result_final_save_path, model_name):  # 
 
 def test_pytorch(nn_path, data, label, result_final_save_path, model_name):
     data_tc, lable_tc = torch.from_numpy(data).to(device), torch.from_numpy(label).to(device)
-    model = torch.load(nn_path)  # TODO cpu
+    model = torch.load(nn_path)
     model.eval()
     y_pred = model(data_tc)
     y_pred_numpy = y_pred.cpu().detach().numpy()

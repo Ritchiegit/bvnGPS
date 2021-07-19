@@ -1,4 +1,3 @@
-# coding: UTF-8
 import torch
 import torch.nn as nn
 
@@ -11,22 +10,6 @@ class Config(object):
         self.num_experts = num_experts
         self.units = expert_unit  # expert units
         self.hidden_units = hidden_units  # tower units
-
-        # self.model_name = 'mmoe'
-        # self.train_path = data_dir + 'train.txt'
-        # self.test_path = data_dir + 'test.txt'
-        # self.save_path = './saved_dict/' + self.model_name + '.ckpt'
-        # self.require_improvement = 1000
-        # self.dropout = 0.5
-        # self.learning_rate = 1e-4
-        # self.label_columns = ['income_50k', 'marital_stat']
-        # self.embed_size = 64
-        # self.batch_size = 128
-        # self.field_size = 0
-        # self.num_epochs = 100
-
-
-
 
 class MMoE(nn.Module):
     def __init__(self,config):
@@ -63,17 +46,6 @@ class MMoE(nn.Module):
     def forward(self,x):
         gate_outputs = []
         final_outputs = []
-        # xi =x[0]
-        # xv = x[1]
-
-        # self.embeddings = self.embedding_layer(xi)
-        # feat_value = xv.view(-1,xv.size(1),1)
-        #
-        # self.embeddings = feat_value * self.embeddings
-        # self.embeddings = self.embeddings.view(xv.size(0),-1)
-
-        # print("x_shape", x.shape)
-        # print("self.expert_kernels.shape", self.expert_kernels.shape)
         expert_outputs = torch.einsum("ab,bcd->acd", (x, self.expert_kernels))
         expert_outputs += self.expert_kernels_bias
         expert_outputs = self.expert_activation(expert_outputs)

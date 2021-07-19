@@ -3,6 +3,7 @@ import pandas as pd
 import itertools
 from tqdm import tqdm
 
+
 def comb_mine(N, k):
     up = np.math.factorial(N)
     down = (np.math.factorial(k) * np.math.factorial(N - k))

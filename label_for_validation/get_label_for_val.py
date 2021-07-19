@@ -1,4 +1,3 @@
-
 import pandas as pd
 import os
 from load_data.load_data_raw import load_data_raw
@@ -22,8 +21,6 @@ gene_GSE_concated = gene_GSE_concated.T
 if type_part_dataset == "0.7":
     gene_GSE_concated, _, label_GSE_concated, _ = train_test_split(
         gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)
-    # print("type 0.7")
-    # print(gene_GSE_concated.shape)
 elif type_part_dataset == "0.3":
     _, gene_GSE_concated, _, label_GSE_concated = train_test_split(
         gene_GSE_concated, label_GSE_concated, test_size=0.3, random_state=dataset_random_state)

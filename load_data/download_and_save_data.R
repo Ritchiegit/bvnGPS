@@ -71,16 +71,15 @@ description_to_label <- function(des){
     
     else if (substring(des_each, 1, 19) == "PBMC_InfluenzaA_INF") {key=2}
     else if (substring(des_each, 1, 19) == "PBMC_InfluenzaB_INF") {key=2}
-    else if (substring(des_each, 1, 22) == "PBMC_S.aureus_MRSA_INF") {key=1}  # 金黄色葡萄球菌
-    else if (substring(des_each, 1, 21) == "PBMC_S.pneumoniae_INF") {key=1}  # 肺炎
-    else if (substring(des_each, 1, 22) == "PBMC_S.aureus_MSSA_INF") {key=1}  # 金黄色葡萄球菌
+    else if (substring(des_each, 1, 22) == "PBMC_S.aureus_MRSA_INF") {key=1}
+    else if (substring(des_each, 1, 21) == "PBMC_S.pneumoniae_INF") {key=1}
+    else if (substring(des_each, 1, 22) == "PBMC_S.aureus_MSSA_INF") {key=1}
     
     
     else if (substring(des_each, 1, 23) == "bacterial pneumonia_day") {key=1}
     else if (substring(des_each, 1, 20) == "Severe Influenza_day") {key=2}
     else if (substring(des_each, 1, 3) == "Vac") {key=0} 
     
-    # 这里要小心
     else if (substring(des_each, 1, 20) == "pathogen: Adenovirus") {key=2}
     else if (substring(des_each, 1, 14) == "pathogen: HHV6") {key=2}
     else if (substring(des_each, 1, 21) == "pathogen: Enterovirus") {key=2}

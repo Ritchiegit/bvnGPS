@@ -10,7 +10,6 @@ def get_data_with_ipage(gene_GSE_concated, label, threshold):
     return data, pair_index_exact_expressed_list_final
 
 
-# label
 def get_label_multilabel(label_GSE_concated):
     """
     :param label_GSE_concated:

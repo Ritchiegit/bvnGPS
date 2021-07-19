@@ -1,7 +1,6 @@
 from torch.utils.data import DataLoader, TensorDataset
 import torch.nn as nn
 import torch
-import torch.nn.functional as F
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
@@ -12,11 +11,6 @@ from model.mmoe import MMoE
 from model.mmoe import Config
 from model.multi_layers_FCN import mutli_layers_FCN
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# device = torch.device("cpu")  # TODO cpu
-
-
-
-
 
 
 def evaluate(loader, model, criterion, num_classes=2):

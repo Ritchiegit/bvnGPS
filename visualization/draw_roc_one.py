@@ -1,10 +1,6 @@
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import pandas as pd
-import os
-from load_data.load_data_raw import load_data_raw
-from data_processing.process_data_label import get_label_multilabel
-from sklearn.model_selection import train_test_split
 
 # pred_path = "../label_for_validation/pred_only_21802_57065.csv"
 # label_path = "../label_for_validation/label_only_21802_57065.csv"

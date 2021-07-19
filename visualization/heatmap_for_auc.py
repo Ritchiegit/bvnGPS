@@ -32,19 +32,10 @@ for i in range(4):
             for csv_path_one in csv_path:
                 csv_one = pd.read_csv(csv_path_one, header=None, index_col=0)
                 csv_one.columns = ["Non-infected", "Bacterial", "Viral", "epoches"]
-                # print(csv_one)
-                # print(csv_one.columns)
-
                 model_csv_selected = csv_one[["Bacterial", "Viral", "Non-infected"]].iloc[[index]]  # .iloc[[0, 119, 80, 36]]
-                # print(model_csv_selected)
                 one_model_result_50_list.append(model_csv_selected)
             one_model_result_50 = pd.concat(one_model_result_50_list, axis=0)
-            # print(one_model_result_50)
-            #a = one_model_result_50.loc["CART.model_pickle"]
-            # print(one_model_result_50.head(3))
-            # print(np.average(one_model_result_50, axis=0))
             source_output_50_list.append(one_model_result_50)
-        # print(source_output_50_list)
         source_output_50_train_test_val = pd.concat(source_output_50_list, axis=1)
         print(source_output_50_train_test_val)
         source_output_50_train_test_val.columns = ["train_b", "train_v", "train_n",
@@ -62,7 +53,6 @@ for i in range(4):
     plt.xticks(fontsize=7)
     ax.tick_params(left=False)
     ax.set_ylabel('')
-    # plt.suptitle(f"{model_name[i]}")
     all_ax[i].set_title(f"{model_name[i]}")
 
 fig.tight_layout(rect=[0, 0, .9, 1])
