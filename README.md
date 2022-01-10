@@ -1,6 +1,6 @@
 # bvnGPS
 
-bvnGPS: The official implementation of "A robust antibiotics decision model based on integrative host transcriptomics and multi-class neural network".
+bvnGPS: The official implementation of "**A robust antibiotics decision model based on integrative host transcriptomics and multi-class neural network**".
 
 Input: 
 
