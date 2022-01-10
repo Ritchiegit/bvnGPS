@@ -10,5 +10,5 @@ Output:
 
 1. bacterial GPS, viral GPS, and noninfected GPS;
 2. decision tree, random forest, and support vector machines based on GPS selected;
-3. AUC performance of Decision tree, random forest, and support vector on internal test data and external validation data. (Other performance could be calculated with python file in `visualization/`, such as accuracy, sensitivity, specificity, and ROC curve)
+3. AUC performance of Decision tree, random forest, and support vector on internal test data and external validation data. (Other performance could be calculated with `visualization/`, such as accuracy, sensitivity, specificity, and ROC curve)
 
